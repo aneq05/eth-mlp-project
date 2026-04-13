@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML artifacts
+checkpoints/**/*.pt
+checkpoints/**/*.pth
+logs/tensorboard/**
+logs/optuna/*.db
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Data files
+data/raw/*.csv
+data/interim/*.csv
+data/processed/*.parquet
