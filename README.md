@@ -6,6 +6,8 @@ Pipeline do predykcji sygnalu `sell / hold / buy` dla ETHUSDT (interwal 1h) z uz
 - Optuna (HPO)
 - TensorBoard (monitoring)
 
+Notebooki zostaja tylko do prezentacji i raportu. Caly pipeline treningowy jest uruchamiany skryptami.
+
 ## Struktura
 
 ```text
@@ -14,8 +16,20 @@ eth-mlp-project/
 │   ├── raw/
 │   ├── interim/
 │   └── processed/
-├── notebooks/
+├── notebooks/                      # tylko prezentacja i EDA do zaliczenia
+├── scripts/                        # entrypointy pipeline'u
+│   ├── run_prepare_data.py
+│   ├── run_optuna.py
+│   ├── run_top3.py
+│   ├── run_evaluate.py
+│   └── run_all.py
 ├── src/
+│   ├── core/                       # config, utilsy
+│   ├── data/                       # loading, cleaning, split, dataset
+│   ├── features/                   # feature engineering, target, scaling, selection
+│   ├── modeling/                   # MLP, train/validate/fit, optuna helpers, inference
+│   ├── evaluation/                 # metrics, testy statystyczne
+│   └── pipelines/                  # logika etapow E2E
 ├── logs/
 │   ├── tensorboard/
 │   └── optuna/
@@ -28,35 +42,52 @@ eth-mlp-project/
 
 ## Szybki start
 
-1. Wejdz do katalogu projektu:
-
 ```powershell
 cd C:\Users\ankap\OneDrive\Desktop\PROJEKTY\nn\eth-mlp-project
-```
-
-2. Zainstaluj zaleznosci:
-
-```powershell
 pip install -r requirements.txt
 ```
 
-3. Uruchom TensorBoard:
+## Uruchamianie etapowe (zalecane)
+
+1. Przygotowanie danych (cleaning + features + target + split):
+
+```powershell
+python scripts/run_prepare_data.py --raw-csv "C:\sciezka\do\ethusdt_1h.csv" --horizon 6 --threshold 0.0075
+```
+
+2. Optuna z 5-fold walk-forward:
+
+```powershell
+python scripts/run_optuna.py --n-trials 30 --epochs 20 --patience 5 --n-splits 5 --device cpu
+```
+
+3. Trening top-3 i ensemble na test:
+
+```powershell
+python scripts/run_top3.py --epochs 50 --patience 10 --device cpu
+```
+
+4. Raporty ewaluacyjne (confusion matrix + classification report):
+
+```powershell
+python scripts/run_evaluate.py
+```
+
+## Uruchomienie end-to-end
+
+```powershell
+python scripts/run_all.py --raw-csv "C:\sciezka\do\ethusdt_1h.csv" --n-trials 30 --device cpu
+```
+
+## TensorBoard
 
 ```powershell
 tensorboard --logdir logs/tensorboard
 ```
 
-## Kolejnosc prac
-
-1. `notebooks/01_data_download_and_cleaning.ipynb` - pobranie i cleaning danych.
-2. `notebooks/02_eda.ipynb` - EDA i analiza klas.
-3. `notebooks/03_feature_engineering.ipynb` - cechy + target.
-4. `src/` - pipeline treningowy i inferencja.
-5. `notebooks/04_results_analysis.ipynb` - analiza wynikow i wykresy.
-
 ## Notatki metodologiczne (time series)
 
 - Split danych wykonujemy chronologicznie.
-- Walidacja wielokrotna to walk-forward / TimeSeriesSplit.
+- Walidacja wielokrotna to walk-forward (`TimeSeriesSplit`).
 - Skaler fitowany tylko na train fold.
 - Niezbalansowanie klas obslugujemy wagami w `CrossEntropyLoss`.

@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from .metrics import compute_classification_metrics
+from ..evaluation.metrics import compute_classification_metrics
 
 
 @torch.no_grad()
