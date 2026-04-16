@@ -85,6 +85,12 @@ python scripts/run_all.py --raw-csv "C:\sciezka\do\ethusdt_1h.csv" --n-trials 30
 tensorboard --logdir logs/tensorboard
 ```
 
+## Dokumentacja danych
+
+Szczegolowy opis uzytego zbioru danych znajduje sie w:
+
+- `reports/data_description.md`
+
 ## Notatki metodologiczne (time series)
 
 - Split danych wykonujemy chronologicznie.

@@ -104,9 +104,11 @@ def run_optuna_time_series_search(
     optuna_config: OptunaConfig,
     training_config: TrainingConfig,
     n_splits: int = 5,
-    random_seed: int = 42,
+    random_seed: int | None = None,
 ) -> dict:
-    set_seed(random_seed)
+    # In line with lab note: do not force random split seeds inside objective/folding.
+    if random_seed is not None:
+        set_seed(random_seed)
 
     train_df = pd.read_parquet(data_config.train_parquet)
     val_df = pd.read_parquet(data_config.val_parquet)
