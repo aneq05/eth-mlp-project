@@ -40,6 +40,13 @@ eth-mlp-project/
 └── README.md
 ```
 
+## Forma oddania projektu
+
+Projekt jest utrzymywany w dwoch rownoleglych formach:
+
+- `notebooks/` - wersja prezentacyjna na zaliczenie (krok po kroku).
+- `src/` + `scripts/` - wersja produkcyjna/modulowa (kod podzielony na etapy pipeline'u).
+
 ## Szybki start
 
 ```powershell
