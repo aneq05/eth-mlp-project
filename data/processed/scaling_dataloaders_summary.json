@@ -1,7 +1,7 @@
 {
   "scaler_type": "robust",
   "auto_scaler": "robust",
-  "train_outlier_ratio_iqr": 0.05560946541320821,
+  "train_outlier_ratio_iqr": 0.05518289009661442,
   "selected_feature_count": 38,
   "train_shape": [
     32326,

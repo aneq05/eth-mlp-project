@@ -1,29 +1,45 @@
 {
   "study_name": "eth_mlp_optimization",
-  "best_trial_number": 21,
-  "best_value": 0.3963765090422494,
+  "best_trial_number": 74,
+  "best_value": 0.39750490758156753,
   "best_params": {
-    "n_layers": 5,
-    "hidden_dim_1": 128,
-    "hidden_dim_2": 384,
-    "hidden_dim_3": 128,
-    "hidden_dim_4": 320,
-    "hidden_dim_5": 320,
-    "dropout": 0.21313271749821694,
-    "activation": "relu",
+    "n_layers": 2,
+    "hidden_dim_1": 320,
+    "hidden_dim_2": 352,
+    "dropout": 0.38602540514996175,
+    "activation": "leaky_relu",
     "use_batchnorm": false,
     "optimizer": "adam",
-    "lr": 0.0007545084972432487,
-    "weight_decay": 1.548191629396424e-05,
-    "batch_size": 64,
+    "lr": 0.0017426803787583814,
+    "weight_decay": 0.00018073848892979683,
+    "batch_size": 32,
     "scaler_type": "standard",
-    "clip_grad_norm": 1.8286187264221057
+    "clip_grad_norm": 2.32356923645467
   },
-  "n_trials_total": 35,
-  "n_trials_complete": 9,
+  "n_trials_total": 95,
+  "n_trials_complete": 14,
   "top3": [
     {
       "rank": 1,
+      "trial_number": 74,
+      "value": 0.39750490758156753,
+      "params": {
+        "n_layers": 2,
+        "hidden_dim_1": 320,
+        "hidden_dim_2": 352,
+        "dropout": 0.38602540514996175,
+        "activation": "leaky_relu",
+        "use_batchnorm": false,
+        "optimizer": "adam",
+        "lr": 0.0017426803787583814,
+        "weight_decay": 0.00018073848892979683,
+        "batch_size": 32,
+        "scaler_type": "standard",
+        "clip_grad_norm": 2.32356923645467
+      }
+    },
+    {
+      "rank": 2,
       "trial_number": 21,
       "value": 0.3963765090422494,
       "params": {
@@ -45,45 +61,22 @@
       }
     },
     {
-      "rank": 2,
-      "trial_number": 15,
-      "value": 0.3941217673633283,
-      "params": {
-        "n_layers": 3,
-        "hidden_dim_1": 352,
-        "hidden_dim_2": 480,
-        "hidden_dim_3": 128,
-        "dropout": 0.25737282781896126,
-        "activation": "leaky_relu",
-        "use_batchnorm": false,
-        "optimizer": "adam",
-        "lr": 0.00016127587660521436,
-        "weight_decay": 6.586934409600648e-06,
-        "batch_size": 32,
-        "scaler_type": "standard",
-        "clip_grad_norm": 3.8221418251072468
-      }
-    },
-    {
       "rank": 3,
-      "trial_number": 30,
-      "value": 0.39411263463281615,
+      "trial_number": 72,
+      "value": 0.39604684864137774,
       "params": {
-        "n_layers": 5,
-        "hidden_dim_1": 256,
-        "hidden_dim_2": 224,
-        "hidden_dim_3": 160,
-        "hidden_dim_4": 288,
-        "hidden_dim_5": 512,
-        "dropout": 0.12290832959150125,
+        "n_layers": 2,
+        "hidden_dim_1": 320,
+        "hidden_dim_2": 480,
+        "dropout": 0.21793213397989541,
         "activation": "leaky_relu",
         "use_batchnorm": false,
         "optimizer": "adam",
-        "lr": 0.0007776998297928173,
-        "weight_decay": 1.465178653359858e-06,
+        "lr": 0.0009237980454434094,
+        "weight_decay": 0.00018487594194121424,
         "batch_size": 32,
         "scaler_type": "standard",
-        "clip_grad_norm": 1.5886065067293111
+        "clip_grad_norm": 2.5983769240365127
       }
     }
   ]

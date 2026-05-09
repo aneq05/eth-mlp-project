@@ -5,8 +5,8 @@ number_of_trades
 return_1
 return_12
 return_24
+upper_shadow
 lower_shadow
-body_size
 rolling_return_std_6
 rolling_return_skew_6
 rolling_return_kurt_6

@@ -1,5 +1,6 @@
 dropped_feature
 atr_14
+body_size
 close
 close_open_pct
 dist_ema_12
@@ -54,6 +55,5 @@ sma_24
 sma_6
 taker_buy_base_asset_volume
 taker_buy_quote_asset_volume
-upper_shadow
 volume
 volume_mean_24
