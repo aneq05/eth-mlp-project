@@ -4,7 +4,7 @@
 
 The project explores whether a tabular neural network can classify short-term ETHUSDT market states into `sell`, `hold`, and `buy` classes using hourly OHLCV-derived features.
 
-The main goal is methodological: build a time-series-aware ML workflow that avoids the most common leakage mistakes and can be inspected both as notebooks and as reusable Python code.
+The main goal is methodological: build a time-series-aware ML workflow that avoids the most common leakage mistakes and can be inspected both as a final notebook and as reusable Python code.
 
 ## 2. Data
 
@@ -62,7 +62,7 @@ These scores are modest, which is expected for short-horizon crypto movement cla
 - Chronological splitting and walk-forward validation make the workflow more realistic than random splitting.
 - Class weighting helps address the dominant `hold` class.
 - The ensemble provides a structured way to combine the best Optuna configurations.
-- Separating notebooks from `src/` and `scripts/` makes the project easier to review on GitHub.
+- Separating the final notebook from `src/` and `scripts/` makes the project easier to review on GitHub.
 
 ## 7. Limitations
 

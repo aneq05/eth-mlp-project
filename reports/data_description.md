@@ -18,7 +18,7 @@ The raw data was assembled from Binance Data Vision public kline archives:
 - monthly klines: `https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/1h/`
 - daily klines: `https://data.binance.vision/data/spot/daily/klines/ETHUSDT/1h/`
 
-The repository includes a CSV snapshot so the notebooks and pipeline can be inspected without repeating the download step.
+The repository includes a CSV snapshot so the final notebook and pipeline can be inspected without repeating the download step.
 
 ## Schema
 

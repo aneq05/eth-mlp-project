@@ -2,7 +2,7 @@
 
 Small academic machine-learning project for classifying short-term ETH/USDT market states into `sell`, `hold`, and `buy` signals from hourly OHLCV data.
 
-The original deliverable was a Jupyter notebook prepared for a university assignment. This repository keeps that notebook version, but also exposes the same workflow as a modular Python pipeline with data preparation, feature engineering, Optuna hyperparameter search, PyTorch training, ensembling, and evaluation reports.
+The original deliverable was a Jupyter notebook prepared for a university assignment. The project was later refactored into a modular Python package and reproducible command-line pipelines. In this repository, the notebook is kept as a historical submission artifact, while `src/` and `scripts/` are the source of truth for the portfolio version.
 
 ## Project Highlights
 
@@ -21,11 +21,11 @@ This is a learning/research project, not trading advice or a production trading 
 eth-mlp-project/
 |-- data/
 |   |-- raw/                  # raw ETHUSDT 1h CSV snapshot
-|   |-- clean/                # cleaned CSV snapshot from notebook workflow
+|   |-- clean/                # cleaned CSV snapshot
 |   |-- labeled/              # labeled train/val/test CSV snapshots
 |   `-- processed/            # engineered/scaled data snapshots
-|-- final_version/            # original final notebook submitted for grading
-|-- notebooks/ready/          # step-by-step exploratory notebooks
+|-- notebooks/
+|   `-- original_submission.ipynb
 |-- scripts/                  # command-line pipeline entrypoints
 |-- src/                      # reusable Python package code
 |   |-- core/
@@ -136,10 +136,9 @@ python scripts/run_all.py --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --devi
 
 ## Notebook Version
 
-- `final_version/final_v.ipynb` preserves the compact final version used for the assignment.
-- `notebooks/ready/` contains the step-by-step notebook workflow.
+`notebooks/original_submission.ipynb` contains the original notebook-based version prepared for the university assignment.
 
-The notebooks are useful for presentation and auditability. The `src/` and `scripts/` folders are the cleaner version to read when reviewing implementation quality.
+The implementation was later refactored into the modular `src/` package and reproducible command-line pipelines under `scripts/`. The notebook and package are intentionally not maintained as two identical copies of the same code.
 
 ## Development
 
