@@ -18,6 +18,7 @@ from ..modeling.train import train_one_epoch
 from ..modeling.trial_selection import select_top_completed_trials
 from ..modeling.validate import validate_one_epoch
 from ..features.scaling import get_scaler
+from ..features.selection import apply_feature_selection, fit_feature_selection
 
 
 def _extract_feature_columns(df: pd.DataFrame) -> list[str]:
@@ -34,14 +35,29 @@ def _build_optimizer(name: str, model: nn.Module, lr: float, weight_decay: float
 
 
 def _train_fold(
-    x_train: np.ndarray,
-    y_train: np.ndarray,
-    x_val: np.ndarray,
-    y_val: np.ndarray,
+    train_df: pd.DataFrame,
+    val_df: pd.DataFrame,
     params: dict,
     training_config: TrainingConfig,
     device: torch.device,
+    corr_threshold: float,
+    apply_vif: bool,
+    vif_threshold: float,
 ) -> float:
+    feature_cols, _ = fit_feature_selection(
+        train_df,
+        corr_threshold=corr_threshold,
+        apply_vif=apply_vif,
+        vif_threshold=vif_threshold,
+    )
+    train_selected = apply_feature_selection(train_df, feature_cols)
+    val_selected = apply_feature_selection(val_df, feature_cols)
+
+    x_train = train_selected[feature_cols].to_numpy(dtype=np.float32)
+    y_train = train_selected["target"].to_numpy(dtype=np.int64)
+    x_val = val_selected[feature_cols].to_numpy(dtype=np.float32)
+    y_val = val_selected["target"].to_numpy(dtype=np.int64)
+
     scaler = get_scaler(params["scaler_type"])
     x_train_scaled = scaler.fit_transform(x_train)
     x_val_scaled = scaler.transform(x_val)
@@ -106,7 +122,11 @@ def run_optuna_time_series_search(
     training_config: TrainingConfig,
     n_splits: int = 5,
     cv_gap: int = 0,
+    corr_threshold: float = 0.95,
+    apply_vif: bool = True,
+    vif_threshold: float = 10.0,
     random_seed: int | None = None,
+    run_dir: str | Path | None = None,
 ) -> dict:
     seed = optuna_config.seed if random_seed is None else random_seed
     if seed is not None:
@@ -116,9 +136,7 @@ def run_optuna_time_series_search(
     val_df = pd.read_parquet(data_config.val_parquet)
     train_val_df = pd.concat([train_df, val_df], axis=0)
 
-    feature_cols = _extract_feature_columns(train_val_df)
-    x_all = train_val_df[feature_cols].to_numpy(dtype=np.float32)
-    y_all = train_val_df["target"].to_numpy(dtype=np.int64)
+    candidate_feature_cols = _extract_feature_columns(train_val_df)
 
     device = torch.device(training_config.device)
 
@@ -127,17 +145,18 @@ def run_optuna_time_series_search(
         fold_scores: list[float] = []
 
         for train_idx, val_idx in time_series_cv_indices(len(train_val_df), n_splits=n_splits, gap=cv_gap):
-            x_train, y_train = x_all[train_idx], y_all[train_idx]
-            x_val, y_val = x_all[val_idx], y_all[val_idx]
+            fold_train_df = train_val_df.iloc[train_idx].copy()
+            fold_val_df = train_val_df.iloc[val_idx].copy()
 
             score = _train_fold(
-                x_train=x_train,
-                y_train=y_train,
-                x_val=x_val,
-                y_val=y_val,
+                train_df=fold_train_df,
+                val_df=fold_val_df,
                 params=params,
                 training_config=training_config,
                 device=device,
+                corr_threshold=corr_threshold,
+                apply_vif=apply_vif,
+                vif_threshold=vif_threshold,
             )
             fold_scores.append(score)
             trial.report(np.mean(fold_scores), step=len(fold_scores))
@@ -155,7 +174,7 @@ def run_optuna_time_series_search(
     )
     study.optimize(objective, n_trials=optuna_config.n_trials, timeout=optuna_config.timeout_seconds)
 
-    reports_dir = Path(data_config.features_parquet).parents[2] / "reports"
+    reports_dir = Path(run_dir) if run_dir is not None else Path(data_config.features_parquet).parents[2] / "reports"
     ensure_dir(reports_dir)
     top_trials = []
     selected_trials = select_top_completed_trials(study.trials, limit=5, direction=optuna_config.direction)
@@ -177,11 +196,18 @@ def run_optuna_time_series_search(
         "best_trial_number": int(selected_trials[0].number),
         "best_params": selected_trials[0].params,
         "top_trials": top_trials,
-        "feature_count": len(feature_cols),
+        "candidate_feature_count": len(candidate_feature_cols),
         "n_splits": n_splits,
         "cv_gap": int(cv_gap),
+        "feature_selection": {
+            "fit_scope": "inside_each_cv_fold",
+            "corr_threshold": corr_threshold,
+            "apply_vif": apply_vif,
+            "vif_threshold": vif_threshold,
+        },
         "seed": seed,
         "reset_study": optuna_config.reset_study,
+        "run_dir": str(reports_dir),
     }
     save_json(payload, reports_dir / "optuna_summary.json")
     return payload

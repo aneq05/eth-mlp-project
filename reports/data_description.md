@@ -69,13 +69,7 @@ Default project settings:
 - `hold = 1` when `-threshold <= future_return <= threshold`
 - `buy = 2` when `future_return > threshold`
 
-With the preserved labeled split, the class distribution is:
-
-| Split | Sell | Hold | Buy |
-| --- | ---: | ---: | ---: |
-| Train | 25.22% | 47.41% | 27.37% |
-| Validation | 27.16% | 43.85% | 28.99% |
-| Test | 25.34% | 48.31% | 26.36% |
+The exact class distribution is generated during data preparation and saved to `reports/data_prep_metadata.json`. Generated labeled and processed datasets are intentionally not committed, so the public repository does not mix stale artifacts with the current pipeline.
 
 ## Limitations
 

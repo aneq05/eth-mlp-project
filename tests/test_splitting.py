@@ -1,7 +1,10 @@
+import importlib.util
+import unittest
+
 import pandas as pd
 from unittest import TestCase
 
-from src.data.splitting import chronological_train_val_test_split
+from src.data.splitting import chronological_train_val_test_split, time_series_cv_indices
 
 
 class TestChronologicalSplit(TestCase):
@@ -39,3 +42,9 @@ class TestChronologicalSplit(TestCase):
 
         with self.assertRaisesRegex(ValueError, "must equal 1.0"):
             chronological_train_val_test_split(df, train_ratio=0.5, val_ratio=0.2, test_ratio=0.2)
+
+    @unittest.skipUnless(importlib.util.find_spec("sklearn") is not None, "scikit-learn is not installed")
+    def test_time_series_cv_applies_gap_before_validation_fold(self) -> None:
+        for train_idx, val_idx in time_series_cv_indices(n_samples=12, n_splits=3, gap=2):
+            self.assertLess(train_idx[-1], val_idx[0])
+            self.assertEqual(val_idx[0] - train_idx[-1] - 1, 2)

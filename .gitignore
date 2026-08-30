@@ -24,6 +24,7 @@ checkpoints/**/*.pth
 checkpoints/**/*.pkl
 logs/tensorboard/**
 logs/optuna/*.db
+logs/*.csv
 *.db
 
 # OS/editor
@@ -37,5 +38,17 @@ Thumbs.db
 # Data files
 data/raw/*.csv
 data/interim/*.csv
+data/clean/*.csv
+data/labeled/*.csv
+data/processed/*.csv
 data/processed/*.parquet
 data/processed/*.npz
+data/processed/*.pkl
+
+# Generated experiment outputs
+reports/runs/
+reports/predictions/
+reports/figures/*.png
+reports/eda/*.png
+reports/*.csv
+reports/*.json

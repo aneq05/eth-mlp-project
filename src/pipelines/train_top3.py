@@ -15,6 +15,7 @@ from ..data.dataset import TabularDataset
 from ..evaluation.metrics import compute_classification_metrics
 from ..evaluation.statistical_tests import bootstrap_metric_difference
 from ..features.scaling import get_scaler
+from ..features.selection import apply_feature_selection, fit_feature_selection
 from ..modeling.ensemble import mean_probability_ensemble, prediction_uncertainty
 from ..modeling.fit import fit_model
 from ..modeling.inference import predict_classes, predict_probabilities
@@ -59,6 +60,10 @@ def run_top3_training_and_ensemble(
     training_config: TrainingConfig,
     random_seed: int = 42,
     validation_gap: int = 0,
+    corr_threshold: float = 0.95,
+    apply_vif: bool = True,
+    vif_threshold: float = 10.0,
+    run_dir: str | Path | None = None,
 ) -> dict:
     set_seed(random_seed)
 
@@ -67,7 +72,7 @@ def run_top3_training_and_ensemble(
     test_df = pd.read_parquet(data_config.test_parquet)
 
     train_val_df = pd.concat([train_df, val_df], axis=0)
-    feature_cols = _extract_feature_columns(train_val_df)
+    candidate_feature_cols = _extract_feature_columns(train_val_df)
 
     # Internal chronological split for final training + early stopping.
     if validation_gap < 0:
@@ -78,6 +83,16 @@ def run_top3_training_and_ensemble(
     final_val_df = train_val_df.iloc[val_start:].copy()
     if final_train_df.empty or final_val_df.empty:
         raise ValueError("final train and validation splits must be non-empty after applying validation_gap")
+
+    feature_cols, feature_selection_report = fit_feature_selection(
+        final_train_df,
+        corr_threshold=corr_threshold,
+        apply_vif=apply_vif,
+        vif_threshold=vif_threshold,
+    )
+    final_train_df = apply_feature_selection(final_train_df, feature_cols)
+    final_val_df = apply_feature_selection(final_val_df, feature_cols)
+    test_df = apply_feature_selection(test_df, feature_cols)
 
     x_train = final_train_df[feature_cols].to_numpy(dtype=np.float32)
     y_train = final_train_df["target"].to_numpy(dtype=np.int64)
@@ -93,9 +108,12 @@ def run_top3_training_and_ensemble(
 
     device = torch.device(training_config.device)
     project_root = data_config.features_parquet.parents[2]
-    checkpoints_dir = ensure_dir(project_root / "checkpoints" / "top3")
-    tensorboard_dir = ensure_dir(project_root / "logs" / "tensorboard" / "final")
-    predictions_dir = ensure_dir(project_root / "reports" / "predictions")
+    output_dir = Path(run_dir) if run_dir is not None else project_root / "reports"
+    ensure_dir(output_dir)
+    run_label = output_dir.name if run_dir is not None else "final"
+    checkpoints_dir = ensure_dir(project_root / "checkpoints" / "top3" / run_label)
+    tensorboard_dir = ensure_dir(project_root / "logs" / "tensorboard" / run_label)
+    predictions_dir = ensure_dir(output_dir / "predictions")
 
     all_probabilities: list[np.ndarray] = []
     model_results: list[dict] = []
@@ -184,7 +202,13 @@ def run_top3_training_and_ensemble(
         with (checkpoints_dir / f"model_rank_{rank}_scaler.pkl").open("wb") as f:
             pickle.dump(scaler, f)
         save_json(
-            {"trial_number": trial.number, "trial_value": float(trial.value), "params": params},
+            {
+                "trial_number": trial.number,
+                "trial_value": float(trial.value),
+                "params": params,
+                "feature_columns": feature_cols,
+                "feature_selection": feature_selection_report,
+            },
             checkpoints_dir / f"model_rank_{rank}_config.json",
         )
 
@@ -246,7 +270,11 @@ def run_top3_training_and_ensemble(
         "cv_best_single_model": cv_best_single,
         "bootstrap_ensemble_vs_cv_best": bootstrap,
         "feature_count": len(feature_cols),
+        "candidate_feature_count": len(candidate_feature_cols),
+        "feature_columns": feature_cols,
+        "feature_selection": feature_selection_report,
         "validation_gap": int(validation_gap),
+        "run_dir": str(output_dir),
     }
-    save_json(summary, project_root / "reports" / "final_results_summary.json")
+    save_json(summary, output_dir / "final_results_summary.json")
     return summary

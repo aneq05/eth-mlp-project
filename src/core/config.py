@@ -34,7 +34,6 @@ class SplitConfig:
 
 @dataclass
 class ModelConfig:
-    input_dim: int = 32
     hidden_dims: list[int] = field(default_factory=lambda: [256, 128, 64])
     num_classes: int = 3
     activation: str = "gelu"

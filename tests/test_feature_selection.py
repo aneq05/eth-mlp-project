@@ -1,7 +1,7 @@
 import pandas as pd
 from unittest import TestCase
 
-from src.features.selection import drop_constant_features, drop_highly_correlated_features
+from src.features.selection import drop_constant_features, drop_highly_correlated_features, fit_feature_selection
 
 
 class TestFeatureSelection(TestCase):
@@ -31,3 +31,18 @@ class TestFeatureSelection(TestCase):
 
         self.assertEqual(dropped, ["duplicate"])
         self.assertEqual(filtered.columns.tolist(), ["base", "other"])
+
+    def test_fit_feature_selection_uses_only_train_data(self) -> None:
+        train_df = pd.DataFrame(
+            {
+                "stable_signal": [1.0, 2.0, 3.0, 4.0],
+                "late_only_signal": [1.0, 1.0, 1.0, 1.0],
+                "target": [0, 1, 1, 2],
+                "future_return": [0.1, 0.0, 0.0, -0.1],
+            }
+        )
+
+        selected, dropped = fit_feature_selection(train_df, apply_vif=False)
+
+        self.assertEqual(selected, ["stable_signal"])
+        self.assertEqual(dropped["constant"], ["late_only_signal"])

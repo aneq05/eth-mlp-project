@@ -7,6 +7,7 @@ from .config import (
     TargetConfig,
     TrainingConfig,
 )
+from .utils import make_run_id, resolve_run_dir
 
 __all__ = [
     "PROJECT_ROOT",
@@ -16,4 +17,6 @@ __all__ = [
     "ModelConfig",
     "TrainingConfig",
     "OptunaConfig",
+    "make_run_id",
+    "resolve_run_dir",
 ]

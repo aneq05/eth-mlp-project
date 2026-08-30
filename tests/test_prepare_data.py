@@ -48,17 +48,15 @@ class TestPrepareDatasets(TestCase):
                     data_config=data_config,
                     target_config=TargetConfig(horizon=1, threshold=0.01),
                     split_config=SplitConfig(train_ratio=0.5, val_ratio=0.25, test_ratio=0.25),
-                    apply_vif=False,
                 )
 
             train_df = pd.read_csv(data_config.train_parquet)
             val_df = pd.read_csv(data_config.val_parquet)
             test_df = pd.read_csv(data_config.test_parquet)
 
-            self.assertIn("late_only_signal", metadata["dropped_features"]["constant"])
-            self.assertNotIn("late_only_signal", metadata["feature_columns"])
-            self.assertNotIn("late_only_signal", train_df.columns)
-            self.assertNotIn("late_only_signal", val_df.columns)
-            self.assertNotIn("late_only_signal", test_df.columns)
+            self.assertEqual(metadata["feature_selection"], "deferred_to_cv_and_final_training")
+            self.assertIn("late_only_signal", train_df.columns)
+            self.assertIn("late_only_signal", val_df.columns)
+            self.assertIn("late_only_signal", test_df.columns)
             self.assertFalse(np.isinf(train_df.select_dtypes(include=["number"]).to_numpy()).any())
             self.assertEqual(metadata["split_gap_rows"], 1)

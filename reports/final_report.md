@@ -19,7 +19,7 @@ See `reports/data_description.md` for the full data note.
 The target is based on the future close-to-close return:
 
 ```text
-future_return_t = close[t + 6] / close[t] - 1
+future_return_t = close[t + 6 hours] / close[t] - 1
 ```
 
 The implementation resolves the horizon by timestamp. For the default configuration, the future close must exist exactly at `timestamp + 6 hours`; observations crossing missing hourly timestamps are dropped before modeling.
@@ -40,24 +40,24 @@ The modular pipeline contains:
 2. Feature engineering.
 3. Threshold-based target generation.
 4. Chronological train/validation/test split.
-5. Feature filtering fit only on the training split using constant-feature removal, correlation filtering, and optional VIF reduction.
+5. Feature filtering fit inside each CV fold and final-training split using constant-feature removal, correlation filtering, and optional VIF reduction.
 6. Scaling fit only on training folds.
 7. MLP training in PyTorch with class-weighted cross-entropy.
 8. Optuna hyperparameter search with seeded sampling and purged walk-forward cross-validation.
 9. Top-3 completed-trial retraining and mean-probability ensembling.
 10. Test-set evaluation and bootstrap comparison against the CV-best single model.
 
-## 5. Preserved Results
+## 5. Results
 
-The preserved `reports/top3_ensemble_metrics.csv` snapshot contains:
+Historical prediction CSVs and metric summaries from earlier pipeline revisions were removed from version control. A fresh canonical run should be generated with the current leakage-aware pipeline before presenting final model results.
 
-| Rank | Trial | Optuna CV macro F1 | Test macro F1 | Test balanced accuracy | Test accuracy |
-| ---: | ---: | -----------------: | ------------: | ---------------------: | ------------: |
-| 1 | 120 | 0.3999 | 0.3751 | 0.3942 | 0.3943 |
-| 2 | 111 | 0.3997 | 0.3712 | 0.3944 | 0.4071 |
-| 3 | 74 | 0.3975 | 0.3798 | 0.3905 | 0.4003 |
+The recommended command is:
 
-These scores are modest, which is expected for short-horizon crypto movement classification. The result is useful as a demonstration of a controlled ML experiment, not as evidence of a profitable strategy.
+```bash
+python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --device cpu
+```
+
+The generated metrics will be written to `reports/runs/canonical_seed42/final_results_summary.json`.
 
 ## 6. What Worked
 

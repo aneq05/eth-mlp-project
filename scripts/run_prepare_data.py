@@ -15,9 +15,6 @@ def main() -> None:
     parser.add_argument("--raw-csv", type=str, default=None, help="Path to raw ETHUSDT 1h CSV.")
     parser.add_argument("--horizon", type=int, default=6, help="Prediction horizon in hours.")
     parser.add_argument("--threshold", type=float, default=0.0075, help="Target threshold (tau).")
-    parser.add_argument("--corr-threshold", type=float, default=0.95, help="Correlation threshold.")
-    parser.add_argument("--no-vif", action="store_true", help="Disable VIF-based reduction.")
-    parser.add_argument("--vif-threshold", type=float, default=10.0, help="VIF threshold.")
     args = parser.parse_args()
 
     data_config = DataConfig()
@@ -28,9 +25,6 @@ def main() -> None:
         data_config=data_config,
         target_config=TargetConfig(horizon=args.horizon, threshold=args.threshold),
         split_config=SplitConfig(),
-        corr_threshold=args.corr_threshold,
-        apply_vif=not args.no_vif,
-        vif_threshold=args.vif_threshold,
     )
     print("Data preparation completed.")
     print(metadata)

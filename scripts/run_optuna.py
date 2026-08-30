@@ -7,6 +7,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.core.config import DataConfig, OptunaConfig, TrainingConfig
+from src.core.utils import resolve_run_dir
 from src.pipelines.train_optuna import run_optuna_time_series_search
 
 
@@ -17,8 +18,12 @@ def main() -> None:
     parser.add_argument("--patience", type=int, default=5, help="Early stopping patience.")
     parser.add_argument("--n-splits", type=int, default=5, help="Number of time-series CV splits.")
     parser.add_argument("--cv-gap", type=int, default=6, help="Purged gap between CV train and validation folds.")
+    parser.add_argument("--corr-threshold", type=float, default=0.95, help="Fold-local correlation threshold.")
+    parser.add_argument("--no-vif", action="store_true", help="Disable fold-local VIF reduction.")
+    parser.add_argument("--vif-threshold", type=float, default=10.0, help="Fold-local VIF threshold.")
     parser.add_argument("--study-name", type=str, default="eth_mlp_optimization", help="Optuna study name.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for training and Optuna sampler.")
+    parser.add_argument("--run-id", type=str, default=None, help="Run ID under reports/runs/.")
     parser.add_argument(
         "--reset-study",
         action="store_true",
@@ -38,6 +43,7 @@ def main() -> None:
         seed=args.seed,
         reset_study=args.reset_study,
     )
+    run_dir = resolve_run_dir(PROJECT_ROOT, args.run_id)
 
     summary = run_optuna_time_series_search(
         data_config=DataConfig(),
@@ -45,8 +51,13 @@ def main() -> None:
         training_config=training_config,
         n_splits=args.n_splits,
         cv_gap=args.cv_gap,
+        corr_threshold=args.corr_threshold,
+        apply_vif=not args.no_vif,
+        vif_threshold=args.vif_threshold,
+        run_dir=run_dir,
     )
     print("Optuna search completed.")
+    print(f"Run directory: {run_dir}")
     print(summary)
 
 
