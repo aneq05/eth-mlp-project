@@ -59,6 +59,8 @@ The classification target is derived from the future close-to-close return:
 future_return_t = close[t + horizon] / close[t] - 1
 ```
 
+The horizon is timestamp-based. For example, `horizon = 6` means `timestamp + 6 hours`, not simply the sixth following row. Rows whose exact future timestamp is missing are excluded.
+
 Default project settings:
 
 - `horizon = 6`

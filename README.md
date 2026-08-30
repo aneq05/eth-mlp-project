@@ -61,6 +61,8 @@ For each timestamp `t`, the project computes a future return:
 future_return_t = close[t + horizon] / close[t] - 1
 ```
 
+The horizon is resolved against timestamps, not blindly against row offsets. With the default `horizon=6`, the target uses the close price at `timestamp + 6 hours`; rows whose exact future timestamp is missing are excluded from modeling.
+
 With the default configuration:
 
 - horizon: `6` hours
@@ -71,6 +73,12 @@ With the default configuration:
   - `2`: buy, when future return is above `+threshold`
 
 The model is a feed-forward MLP trained with weighted cross-entropy to reduce the impact of class imbalance.
+
+Feature selection is fit on the training split only. The same selected feature list is then applied to validation and test data. Chronological splits also include a purge gap equal to the prediction horizon:
+
+```text
+TRAIN | gap | VALIDATION | gap | TEST
+```
 
 ## Results Snapshot
 
@@ -158,6 +166,7 @@ python -m compileall -q src scripts tests
 ## Notes And Limitations
 
 - The split is chronological; validation uses walk-forward folds.
+- Purge gaps are used between chronological splits to reduce label overlap across boundaries.
 - Scalers are fit only on training folds to avoid leakage.
 - The target is threshold-based and sensitive to horizon/threshold choices.
 - No transaction costs, slippage, latency, or portfolio simulation are modeled.

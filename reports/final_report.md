@@ -22,13 +22,15 @@ The target is based on the future close-to-close return:
 future_return_t = close[t + 6] / close[t] - 1
 ```
 
+The implementation resolves the horizon by timestamp. For the default configuration, the future close must exist exactly at `timestamp + 6 hours`; observations crossing missing hourly timestamps are dropped before modeling.
+
 Default labels:
 
 - `sell = 0`: future return below `-0.0075`
 - `hold = 1`: future return between `-0.0075` and `+0.0075`
 - `buy = 2`: future return above `+0.0075`
 
-The split is chronological and preserves the temporal order of observations.
+The split is chronological and preserves the temporal order of observations. A purge gap equal to the prediction horizon is inserted between train/validation/test segments.
 
 ## 4. Modeling Workflow
 
@@ -38,7 +40,7 @@ The modular pipeline contains:
 2. Feature engineering.
 3. Threshold-based target generation.
 4. Chronological train/validation/test split.
-5. Feature filtering using constant-feature removal, correlation filtering, and optional VIF reduction.
+5. Feature filtering fit only on the training split using constant-feature removal, correlation filtering, and optional VIF reduction.
 6. Scaling fit only on training folds.
 7. MLP training in PyTorch with class-weighted cross-entropy.
 8. Optuna hyperparameter search with walk-forward cross-validation.

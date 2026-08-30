@@ -19,6 +19,21 @@ class TestChronologicalSplit(TestCase):
         self.assertEqual(val_df["value"].tolist(), [6, 7])
         self.assertEqual(test_df["value"].tolist(), [8, 9])
 
+    def test_applies_gap_between_splits(self) -> None:
+        df = pd.DataFrame({"value": range(12)})
+
+        train_df, val_df, test_df = chronological_train_val_test_split(
+            df,
+            train_ratio=0.5,
+            val_ratio=0.25,
+            test_ratio=0.25,
+            gap=1,
+        )
+
+        self.assertEqual(train_df["value"].tolist(), [0, 1, 2, 3, 4, 5])
+        self.assertEqual(val_df["value"].tolist(), [7, 8, 9])
+        self.assertEqual(test_df["value"].tolist(), [11])
+
     def test_rejects_invalid_ratios(self) -> None:
         df = pd.DataFrame({"value": range(10)})
 

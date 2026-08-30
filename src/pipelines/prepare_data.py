@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from ..core.config import DataConfig, SplitConfig, TargetConfig
@@ -34,32 +35,37 @@ def prepare_datasets(
         horizon=target_config.horizon,
         threshold=target_config.threshold,
     )
-    feat_df = feat_df.dropna().copy()
+    feat_df = feat_df.replace([np.inf, -np.inf], np.nan).dropna().copy()
 
-    target_series = feat_df["target"].astype(int)
-    future_return = feat_df["future_return"].copy()
-    features_only = feat_df.drop(columns=["target", "future_return"])
-
-    # Keep only numeric features for MLP input.
-    features_only = features_only.select_dtypes(include=["number"]).copy()
-    features_only, dropped_constant = drop_constant_features(features_only)
-    features_only, dropped_corr = drop_highly_correlated_features(features_only, threshold=corr_threshold)
-
-    dropped_vif: list[str] = []
-    if apply_vif:
-        features_only, dropped_vif = reduce_vif_features(features_only, vif_threshold=vif_threshold)
-
-    final_df = features_only.copy()
-    final_df["future_return"] = future_return.loc[final_df.index]
-    final_df["target"] = target_series.loc[final_df.index]
-    final_df = final_df.dropna().copy()
-
-    train_df, val_df, test_df = chronological_train_val_test_split(
-        final_df,
+    train_full, val_full, test_full = chronological_train_val_test_split(
+        feat_df,
         train_ratio=split_config.train_ratio,
         val_ratio=split_config.val_ratio,
         test_ratio=split_config.test_ratio,
+        gap=target_config.horizon,
     )
+
+    protected_cols = {"target", "future_return"}
+    train_features = train_full.drop(columns=list(protected_cols)).select_dtypes(include=["number"]).copy()
+    train_features, dropped_constant = drop_constant_features(train_features)
+    train_features, dropped_corr = drop_highly_correlated_features(train_features, threshold=corr_threshold)
+
+    dropped_vif: list[str] = []
+    if apply_vif:
+        train_features, dropped_vif = reduce_vif_features(train_features, vif_threshold=vif_threshold)
+
+    feature_columns = list(train_features.columns)
+
+    def _apply_selected_features(split_df: pd.DataFrame) -> pd.DataFrame:
+        selected = split_df.loc[:, feature_columns].copy()
+        selected["future_return"] = split_df["future_return"].astype(float)
+        selected["target"] = split_df["target"].astype(int)
+        return selected.replace([np.inf, -np.inf], np.nan).dropna().copy()
+
+    train_df = _apply_selected_features(train_full)
+    val_df = _apply_selected_features(val_full)
+    test_df = _apply_selected_features(test_full)
+    final_df = pd.concat([train_df, val_df, test_df], axis=0)
 
     save_dataframe(final_df, data_config.features_parquet)
     save_dataframe(train_df, data_config.train_parquet)
@@ -75,8 +81,9 @@ def prepare_datasets(
         "rows_final_dataset": len(final_df),
         "split_sizes": {"train": len(train_df), "val": len(val_df), "test": len(test_df)},
         "class_counts": {str(k): int(v) for k, v in class_counts.items()},
-        "num_features": int(len(features_only.columns)),
-        "feature_columns": list(features_only.columns),
+        "split_gap_rows": int(target_config.horizon),
+        "num_features": int(len(feature_columns)),
+        "feature_columns": feature_columns,
         "dropped_features": {
             "constant": dropped_constant,
             "high_corr": dropped_corr,
@@ -84,6 +91,7 @@ def prepare_datasets(
         },
         "target_config": {
             "horizon": target_config.horizon,
+            "horizon_unit": "hours",
             "threshold": target_config.threshold,
         },
     }
