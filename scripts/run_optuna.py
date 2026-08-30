@@ -16,6 +16,14 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=20, help="Epochs per fold in each trial.")
     parser.add_argument("--patience", type=int, default=5, help="Early stopping patience.")
     parser.add_argument("--n-splits", type=int, default=5, help="Number of time-series CV splits.")
+    parser.add_argument("--cv-gap", type=int, default=6, help="Purged gap between CV train and validation folds.")
+    parser.add_argument("--study-name", type=str, default="eth_mlp_optimization", help="Optuna study name.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for training and Optuna sampler.")
+    parser.add_argument(
+        "--reset-study",
+        action="store_true",
+        help="Delete an existing study with the same name before running new trials.",
+    )
     parser.add_argument("--device", type=str, default="cpu", help="Device, e.g. cpu or cuda.")
     args = parser.parse_args()
 
@@ -24,13 +32,19 @@ def main() -> None:
         early_stopping_patience=args.patience,
         device=args.device,
     )
-    optuna_config = OptunaConfig(n_trials=args.n_trials)
+    optuna_config = OptunaConfig(
+        study_name=args.study_name,
+        n_trials=args.n_trials,
+        seed=args.seed,
+        reset_study=args.reset_study,
+    )
 
     summary = run_optuna_time_series_search(
         data_config=DataConfig(),
         optuna_config=optuna_config,
         training_config=training_config,
         n_splits=args.n_splits,
+        cv_gap=args.cv_gap,
     )
     print("Optuna search completed.")
     print(summary)

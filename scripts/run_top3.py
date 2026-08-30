@@ -14,6 +14,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Train top-3 Optuna models and evaluate ensemble.")
     parser.add_argument("--epochs", type=int, default=50, help="Epochs for final model training.")
     parser.add_argument("--patience", type=int, default=10, help="Early stopping patience.")
+    parser.add_argument("--study-name", type=str, default="eth_mlp_optimization", help="Optuna study name.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for final training.")
+    parser.add_argument("--validation-gap", type=int, default=6, help="Purged gap for final train/validation split.")
     parser.add_argument("--device", type=str, default="cpu", help="Device, e.g. cpu or cuda.")
     args = parser.parse_args()
 
@@ -25,8 +28,10 @@ def main() -> None:
 
     summary = run_top3_training_and_ensemble(
         data_config=DataConfig(),
-        optuna_config=OptunaConfig(),
+        optuna_config=OptunaConfig(study_name=args.study_name, seed=args.seed),
         training_config=training_config,
+        random_seed=args.seed,
+        validation_gap=args.validation_gap,
     )
     print("Top-3 training and ensemble evaluation completed.")
     print(summary)

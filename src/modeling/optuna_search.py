@@ -2,6 +2,8 @@ from collections.abc import Callable
 
 import optuna
 
+from .trial_selection import select_top_completed_trials
+
 
 def suggest_mlp_params(trial: optuna.Trial) -> dict:
     n_layers = trial.suggest_int("n_layers", 2, 5)
@@ -29,12 +31,23 @@ def create_study(
     study_name: str,
     storage_url: str,
     direction: str = "maximize",
+    load_if_exists: bool = True,
+    reset_study: bool = False,
+    sampler_seed: int | None = None,
 ) -> optuna.Study:
+    if reset_study:
+        try:
+            optuna.delete_study(study_name=study_name, storage=storage_url)
+        except KeyError:
+            pass
+
+    sampler = optuna.samplers.TPESampler(seed=sampler_seed) if sampler_seed is not None else None
     return optuna.create_study(
         study_name=study_name,
         storage=storage_url,
         direction=direction,
-        load_if_exists=True,
+        load_if_exists=load_if_exists,
+        sampler=sampler,
     )
 
 
@@ -45,7 +58,23 @@ def run_optuna_search(
     direction: str = "maximize",
     n_trials: int = 30,
     timeout_seconds: int | None = None,
+    reset_study: bool = False,
+    sampler_seed: int | None = None,
 ) -> optuna.Study:
-    study = create_study(study_name=study_name, storage_url=storage_url, direction=direction)
+    study = create_study(
+        study_name=study_name,
+        storage_url=storage_url,
+        direction=direction,
+        reset_study=reset_study,
+        sampler_seed=sampler_seed,
+    )
     study.optimize(objective_fn, n_trials=n_trials, timeout=timeout_seconds)
     return study
+
+
+__all__ = [
+    "suggest_mlp_params",
+    "create_study",
+    "run_optuna_search",
+    "select_top_completed_trials",
+]

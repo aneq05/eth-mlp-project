@@ -20,6 +20,7 @@ from ..modeling.fit import fit_model
 from ..modeling.inference import predict_classes, predict_probabilities
 from ..modeling.losses import compute_class_weights
 from ..modeling.network import MLPClassifier
+from ..modeling.trial_selection import select_top_completed_trials
 
 
 def _extract_feature_columns(df: pd.DataFrame) -> list[str]:
@@ -57,6 +58,7 @@ def run_top3_training_and_ensemble(
     optuna_config: OptunaConfig,
     training_config: TrainingConfig,
     random_seed: int = 42,
+    validation_gap: int = 0,
 ) -> dict:
     set_seed(random_seed)
 
@@ -68,9 +70,14 @@ def run_top3_training_and_ensemble(
     feature_cols = _extract_feature_columns(train_val_df)
 
     # Internal chronological split for final training + early stopping.
+    if validation_gap < 0:
+        raise ValueError("validation_gap must be non-negative")
     split_idx = int(0.9 * len(train_val_df))
+    val_start = split_idx + validation_gap
     final_train_df = train_val_df.iloc[:split_idx].copy()
-    final_val_df = train_val_df.iloc[split_idx:].copy()
+    final_val_df = train_val_df.iloc[val_start:].copy()
+    if final_train_df.empty or final_val_df.empty:
+        raise ValueError("final train and validation splits must be non-empty after applying validation_gap")
 
     x_train = final_train_df[feature_cols].to_numpy(dtype=np.float32)
     y_train = final_train_df["target"].to_numpy(dtype=np.int64)
@@ -80,7 +87,7 @@ def run_top3_training_and_ensemble(
     y_test = test_df["target"].to_numpy(dtype=np.int64)
 
     study = optuna.load_study(study_name=optuna_config.study_name, storage=optuna_config.storage_url)
-    sorted_trials = sorted(study.best_trials, key=lambda t: t.value, reverse=True)[:3]
+    sorted_trials = select_top_completed_trials(study.trials, limit=3, direction=optuna_config.direction)
     if len(sorted_trials) < 3:
         raise ValueError("Optuna has fewer than 3 completed trials. Run optuna search first.")
 
@@ -194,27 +201,27 @@ def run_top3_training_and_ensemble(
     ensemble_metrics = compute_classification_metrics(y_true=y_test, y_pred=ensemble_preds)
     uncertainty = prediction_uncertainty(ensemble_probs)
 
-    best_single = max(model_results, key=lambda r: r["test_metrics"]["f1_macro"])
-    best_single_pred_path = predictions_dir / f"model_rank_{best_single['rank']}_predictions.csv"
-    best_single_preds = pd.read_csv(best_single_pred_path)["y_pred"].to_numpy(dtype=np.int64)
+    cv_best_single = model_results[0]
+    cv_best_pred_path = predictions_dir / f"model_rank_{cv_best_single['rank']}_predictions.csv"
+    cv_best_preds = pd.read_csv(cv_best_pred_path)["y_pred"].to_numpy(dtype=np.int64)
 
     bootstrap = {
         "f1_macro": bootstrap_metric_difference(
             y_true=y_test,
             y_pred_a=ensemble_preds,
-            y_pred_b=best_single_preds,
+            y_pred_b=cv_best_preds,
             metric_fn=lambda yt, yp: float(f1_score(yt, yp, average="macro", zero_division=0)),
         ),
         "balanced_accuracy": bootstrap_metric_difference(
             y_true=y_test,
             y_pred_a=ensemble_preds,
-            y_pred_b=best_single_preds,
+            y_pred_b=cv_best_preds,
             metric_fn=lambda yt, yp: float(balanced_accuracy_score(yt, yp)),
         ),
         "accuracy": bootstrap_metric_difference(
             y_true=y_test,
             y_pred_a=ensemble_preds,
-            y_pred_b=best_single_preds,
+            y_pred_b=cv_best_preds,
             metric_fn=lambda yt, yp: float(accuracy_score(yt, yp)),
         ),
     }
@@ -236,9 +243,10 @@ def run_top3_training_and_ensemble(
     summary = {
         "top3_models": model_results,
         "ensemble_metrics": ensemble_metrics,
-        "best_single_by_test_f1": best_single,
-        "bootstrap_ensemble_vs_best_single": bootstrap,
+        "cv_best_single_model": cv_best_single,
+        "bootstrap_ensemble_vs_cv_best": bootstrap,
         "feature_count": len(feature_cols),
+        "validation_gap": int(validation_gap),
     }
     save_json(summary, project_root / "reports" / "final_results_summary.json")
     return summary

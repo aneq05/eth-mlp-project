@@ -21,6 +21,9 @@ def main() -> None:
     parser.add_argument("--n-trials", type=int, default=30)
     parser.add_argument("--optuna-epochs", type=int, default=20)
     parser.add_argument("--final-epochs", type=int, default=50)
+    parser.add_argument("--study-name", type=str, default="eth_mlp_optimization")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--reset-study", action="store_true")
     parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
 
@@ -35,13 +38,21 @@ def main() -> None:
     )
     run_optuna_time_series_search(
         data_config=data_config,
-        optuna_config=OptunaConfig(n_trials=args.n_trials),
+        optuna_config=OptunaConfig(
+            study_name=args.study_name,
+            n_trials=args.n_trials,
+            seed=args.seed,
+            reset_study=args.reset_study,
+        ),
         training_config=TrainingConfig(epochs=args.optuna_epochs, early_stopping_patience=5, device=args.device),
+        cv_gap=args.horizon,
     )
     run_top3_training_and_ensemble(
         data_config=data_config,
-        optuna_config=OptunaConfig(),
+        optuna_config=OptunaConfig(study_name=args.study_name, seed=args.seed),
         training_config=TrainingConfig(epochs=args.final_epochs, early_stopping_patience=10, device=args.device),
+        random_seed=args.seed,
+        validation_gap=args.horizon,
     )
     evaluate_saved_predictions(data_config.features_parquet.parents[2])
 

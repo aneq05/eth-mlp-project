@@ -43,9 +43,9 @@ The modular pipeline contains:
 5. Feature filtering fit only on the training split using constant-feature removal, correlation filtering, and optional VIF reduction.
 6. Scaling fit only on training folds.
 7. MLP training in PyTorch with class-weighted cross-entropy.
-8. Optuna hyperparameter search with walk-forward cross-validation.
-9. Top-3 model retraining and mean-probability ensembling.
-10. Test-set evaluation and bootstrap comparison against the best single model.
+8. Optuna hyperparameter search with seeded sampling and purged walk-forward cross-validation.
+9. Top-3 completed-trial retraining and mean-probability ensembling.
+10. Test-set evaluation and bootstrap comparison against the CV-best single model.
 
 ## 5. Preserved Results
 

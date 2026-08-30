@@ -63,3 +63,5 @@ class OptunaConfig:
     n_trials: int = 30
     timeout_seconds: int | None = None
     storage_url: str = f"sqlite:///{PROJECT_ROOT / 'logs' / 'optuna' / 'optuna.db'}"
+    seed: int | None = 42
+    reset_study: bool = False

@@ -121,13 +121,13 @@ python scripts/run_prepare_data.py --raw-csv data/raw/ethusdt_1h.csv --horizon 6
 Run Optuna search:
 
 ```bash
-python scripts/run_optuna.py --n-trials 30 --epochs 20 --patience 5 --n-splits 5 --device cpu
+python scripts/run_optuna.py --n-trials 30 --epochs 20 --patience 5 --n-splits 5 --cv-gap 6 --seed 42 --reset-study --device cpu
 ```
 
 Train the top-3 models and ensemble:
 
 ```bash
-python scripts/run_top3.py --epochs 50 --patience 10 --device cpu
+python scripts/run_top3.py --epochs 50 --patience 10 --validation-gap 6 --seed 42 --device cpu
 ```
 
 Generate evaluation figures and reports:
@@ -139,7 +139,7 @@ python scripts/run_evaluate.py
 Or run everything end-to-end:
 
 ```bash
-python scripts/run_all.py --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --device cpu
+python scripts/run_all.py --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --device cpu
 ```
 
 ## Notebook Version

@@ -15,6 +15,7 @@ from ..modeling.losses import compute_class_weights
 from ..modeling.network import MLPClassifier
 from ..modeling.optuna_search import create_study, suggest_mlp_params
 from ..modeling.train import train_one_epoch
+from ..modeling.trial_selection import select_top_completed_trials
 from ..modeling.validate import validate_one_epoch
 from ..features.scaling import get_scaler
 
@@ -104,11 +105,12 @@ def run_optuna_time_series_search(
     optuna_config: OptunaConfig,
     training_config: TrainingConfig,
     n_splits: int = 5,
+    cv_gap: int = 0,
     random_seed: int | None = None,
 ) -> dict:
-    # In line with lab note: do not force random split seeds inside objective/folding.
-    if random_seed is not None:
-        set_seed(random_seed)
+    seed = optuna_config.seed if random_seed is None else random_seed
+    if seed is not None:
+        set_seed(seed)
 
     train_df = pd.read_parquet(data_config.train_parquet)
     val_df = pd.read_parquet(data_config.val_parquet)
@@ -124,7 +126,7 @@ def run_optuna_time_series_search(
         params = suggest_mlp_params(trial)
         fold_scores: list[float] = []
 
-        for train_idx, val_idx in time_series_cv_indices(len(train_val_df), n_splits=n_splits):
+        for train_idx, val_idx in time_series_cv_indices(len(train_val_df), n_splits=n_splits, gap=cv_gap):
             x_train, y_train = x_all[train_idx], y_all[train_idx]
             x_val, y_val = x_all[val_idx], y_all[val_idx]
 
@@ -148,13 +150,19 @@ def run_optuna_time_series_search(
         study_name=optuna_config.study_name,
         storage_url=optuna_config.storage_url,
         direction=optuna_config.direction,
+        reset_study=optuna_config.reset_study,
+        sampler_seed=seed,
     )
     study.optimize(objective, n_trials=optuna_config.n_trials, timeout=optuna_config.timeout_seconds)
 
     reports_dir = Path(data_config.features_parquet).parents[2] / "reports"
     ensure_dir(reports_dir)
     top_trials = []
-    for trial in sorted(study.best_trials, key=lambda t: t.value, reverse=True)[:5]:
+    selected_trials = select_top_completed_trials(study.trials, limit=5, direction=optuna_config.direction)
+    if not selected_trials:
+        raise ValueError("Optuna search finished without completed trials.")
+
+    for trial in selected_trials:
         top_trials.append(
             {
                 "number": trial.number,
@@ -165,12 +173,15 @@ def run_optuna_time_series_search(
 
     payload = {
         "study_name": optuna_config.study_name,
-        "best_value": float(study.best_value),
-        "best_trial_number": int(study.best_trial.number),
-        "best_params": study.best_params,
+        "best_value": float(selected_trials[0].value),
+        "best_trial_number": int(selected_trials[0].number),
+        "best_params": selected_trials[0].params,
         "top_trials": top_trials,
         "feature_count": len(feature_cols),
         "n_splits": n_splits,
+        "cv_gap": int(cv_gap),
+        "seed": seed,
+        "reset_study": optuna_config.reset_study,
     }
     save_json(payload, reports_dir / "optuna_summary.json")
     return payload
