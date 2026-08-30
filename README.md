@@ -36,9 +36,7 @@ eth-mlp-project/
 |   `-- pipelines/
 |-- reports/                  # data notes, result summaries, metrics, figures
 |-- tests/                    # lightweight unit tests
-|-- requirements.txt
-|-- requirements-dev.txt
-`-- pyproject.toml
+`-- requirements.txt
 ```
 
 ## Data
@@ -145,17 +143,17 @@ The notebooks are useful for presentation and auditability. The `src/` and `scri
 
 ## Development
 
-Install development dependencies and run the lightweight tests:
+Install the project dependencies and run the lightweight tests:
 
 ```bash
-pip install -r requirements-dev.txt
-pytest
+pip install -r requirements.txt
+python -m unittest discover -s tests
 ```
 
 Run a syntax check without training:
 
 ```bash
-python -m compileall -q src scripts
+python -m compileall -q src scripts tests
 ```
 
 ## Notes And Limitations
