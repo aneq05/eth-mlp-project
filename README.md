@@ -136,15 +136,6 @@ Or run everything end-to-end:
 python scripts/run_all.py --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --device cpu
 ```
 
-## Optional PatchTST Experiment
-
-The `neuralforecast/` folder contains a standalone PatchTST experiment using the external `neuralforecast` package. It is kept separate from the main MLP pipeline because it requires an additional dependency and represents an exploratory extension rather than the core assignment deliverable.
-
-```bash
-pip install neuralforecast
-python neuralforecast/run_patchtst_eth.py --raw-csv data/raw/ethusdt_1h.csv --horizon-hours 6 --threshold 0.0075
-```
-
 ## Notebook Version
 
 - `final_version/final_v.ipynb` preserves the compact final version used for the assignment.
