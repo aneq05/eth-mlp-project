@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 
@@ -57,14 +55,12 @@ def prepare_datasets(
         "split_sizes": {"train": len(train_df), "val": len(val_df), "test": len(test_df)},
         "class_counts": {str(k): int(v) for k, v in class_counts.items()},
         "split_gap_rows": int(target_config.horizon),
-        "num_candidate_features": int(
-            len(
-                [
-                    c
-                    for c in train_df.select_dtypes(include=["number"]).columns
-                    if c not in {"target", "future_return"}
-                ]
-            )
+        "num_candidate_features": len(
+            [
+                c
+                for c in train_df.select_dtypes(include=["number"]).columns
+                if c not in {"target", "future_return"}
+            ]
         ),
         "feature_selection": "deferred_to_cv_and_final_training",
         "target_config": {

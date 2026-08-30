@@ -40,5 +40,4 @@ def time_series_cv_indices(
 
     splitter = TimeSeriesSplit(n_splits=n_splits, gap=gap)
     indices = np.arange(n_samples)
-    for train_idx, val_idx in splitter.split(indices):
-        yield train_idx, val_idx
+    yield from splitter.split(indices)

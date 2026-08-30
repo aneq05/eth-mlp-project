@@ -1,7 +1,12 @@
-import pandas as pd
 from unittest import TestCase
 
-from src.features.selection import drop_constant_features, drop_highly_correlated_features, fit_feature_selection
+import pandas as pd
+
+from src.features.selection import (
+    drop_constant_features,
+    drop_highly_correlated_features,
+    fit_feature_selection,
+)
 
 
 class TestFeatureSelection(TestCase):

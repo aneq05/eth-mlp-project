@@ -52,3 +52,5 @@ reports/figures/*.png
 reports/eda/*.png
 reports/*.csv
 reports/*.json
+!reports/canonical_results.json
+!reports/canonical_confusion_matrix.png

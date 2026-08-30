@@ -57,7 +57,9 @@ The recommended command is:
 python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --device cpu
 ```
 
-The generated metrics will be written to `reports/runs/canonical_seed42/final_results_summary.json`.
+The generated metrics will be written to `reports/runs/canonical_seed42/final_results_summary.json`, with the matching Optuna study stored in `reports/runs/canonical_seed42/optuna.db`.
+
+For the final public snapshot, keep the full run directory out of git and promote only compact canonical artifacts such as `reports/canonical_results.json`, `reports/canonical_confusion_matrix.png`, and refreshed README metrics.
 
 ## 6. What Worked
 

@@ -1,10 +1,13 @@
 import importlib.util
 import unittest
-
-import pandas as pd
 from unittest import TestCase
 
-from src.data.splitting import chronological_train_val_test_split, time_series_cv_indices
+import pandas as pd
+
+from src.data.splitting import (
+    chronological_train_val_test_split,
+    time_series_cv_indices,
+)
 
 
 class TestChronologicalSplit(TestCase):

@@ -88,7 +88,7 @@ def create_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Calendar features
     if not isinstance(work.index, pd.DatetimeIndex):
-        raise ValueError("DataFrame index must be DatetimeIndex for calendar features.")
+        raise TypeError("DataFrame index must be DatetimeIndex for calendar features.")
     hour = work.index.hour
     day = work.index.dayofweek
     work["hour_sin"] = np.sin(2 * np.pi * hour / 24)

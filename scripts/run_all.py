@@ -6,8 +6,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.core.config import DataConfig, OptunaConfig, SplitConfig, TargetConfig, TrainingConfig
-from src.core.utils import resolve_run_dir
+from src.core.config import (
+    DataConfig,
+    OptunaConfig,
+    SplitConfig,
+    TargetConfig,
+    TrainingConfig,
+)
+from src.core.utils import optuna_storage_url, resolve_run_dir
 from src.pipelines.evaluate_models import evaluate_saved_predictions
 from src.pipelines.prepare_data import prepare_datasets
 from src.pipelines.train_optuna import run_optuna_time_series_search
@@ -32,6 +38,7 @@ def main() -> None:
     parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
     run_dir = resolve_run_dir(PROJECT_ROOT, args.run_id)
+    storage_url = optuna_storage_url(run_dir / "optuna.db")
 
     data_config = DataConfig()
     if args.raw_csv:
@@ -47,6 +54,7 @@ def main() -> None:
         optuna_config=OptunaConfig(
             study_name=args.study_name,
             n_trials=args.n_trials,
+            storage_url=storage_url,
             seed=args.seed,
             reset_study=args.reset_study,
         ),
@@ -59,7 +67,7 @@ def main() -> None:
     )
     run_top3_training_and_ensemble(
         data_config=data_config,
-        optuna_config=OptunaConfig(study_name=args.study_name, seed=args.seed),
+        optuna_config=OptunaConfig(study_name=args.study_name, storage_url=storage_url, seed=args.seed),
         training_config=TrainingConfig(epochs=args.final_epochs, early_stopping_patience=10, device=args.device),
         random_seed=args.seed,
         validation_gap=args.horizon,

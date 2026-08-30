@@ -138,6 +138,9 @@ python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1
 ```
 
 New run outputs are written under `reports/runs/<run-id>/` so prediction CSVs and figures from different experiments are not mixed.
+The Optuna SQLite database is stored in the same run directory as `reports/runs/<run-id>/optuna.db`, so separate runs do not reuse trials unless you explicitly point them at the same run ID and study name.
+
+For a public portfolio snapshot, keep the full generated run directory out of git and promote only a compact summary such as `reports/canonical_results.json`, `reports/canonical_confusion_matrix.png`, and refreshed README metrics.
 
 ## Notebook Version
 
@@ -160,7 +163,13 @@ Run a syntax check without training:
 python -m compileall -q src scripts tests
 ```
 
-GitHub Actions runs the same lightweight checks on every push and pull request.
+Run linting:
+
+```bash
+ruff check src scripts tests
+```
+
+GitHub Actions runs the same lightweight checks and linting on every push and pull request.
 
 ## Notes And Limitations
 

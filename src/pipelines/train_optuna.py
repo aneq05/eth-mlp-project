@@ -11,14 +11,14 @@ from ..core.config import DataConfig, OptunaConfig, TrainingConfig
 from ..core.utils import ensure_dir, save_json, set_seed
 from ..data.dataset import TabularDataset
 from ..data.splitting import time_series_cv_indices
+from ..features.scaling import get_scaler
+from ..features.selection import apply_feature_selection, fit_feature_selection
 from ..modeling.losses import compute_class_weights
 from ..modeling.network import MLPClassifier
 from ..modeling.optuna_search import create_study, suggest_mlp_params
 from ..modeling.train import train_one_epoch
 from ..modeling.trial_selection import select_top_completed_trials
 from ..modeling.validate import validate_one_epoch
-from ..features.scaling import get_scaler
-from ..features.selection import apply_feature_selection, fit_feature_selection
 
 
 def _extract_feature_columns(df: pd.DataFrame) -> list[str]:
@@ -199,6 +199,7 @@ def run_optuna_time_series_search(
         "candidate_feature_count": len(candidate_feature_cols),
         "n_splits": n_splits,
         "cv_gap": int(cv_gap),
+        "storage_url": optuna_config.storage_url,
         "feature_selection": {
             "fit_scope": "inside_each_cv_fold",
             "corr_threshold": corr_threshold,

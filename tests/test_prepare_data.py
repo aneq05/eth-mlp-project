@@ -11,7 +11,7 @@ from src.pipelines.prepare_data import prepare_datasets
 
 
 class TestPrepareDatasets(TestCase):
-    def test_feature_selection_is_fit_on_train_only_and_inf_rows_are_removed(self) -> None:
+    def test_prepare_data_preserves_unselected_features_and_removes_inf(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             raw_csv = root / "raw.csv"

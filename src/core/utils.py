@@ -34,6 +34,10 @@ def resolve_run_dir(project_root: str | Path, run_id: str | None = None) -> Path
     return ensure_dir(root / "reports" / "runs" / run_id)
 
 
+def optuna_storage_url(db_path: str | Path) -> str:
+    return f"sqlite:///{Path(db_path).resolve().as_posix()}"
+
+
 def save_json(data: dict, output_path: str | Path) -> None:
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -235,18 +235,21 @@ def run_top3_training_and_ensemble(
             y_pred_a=ensemble_preds,
             y_pred_b=cv_best_preds,
             metric_fn=lambda yt, yp: float(f1_score(yt, yp, average="macro", zero_division=0)),
+            block_size=24,
         ),
         "balanced_accuracy": bootstrap_metric_difference(
             y_true=y_test,
             y_pred_a=ensemble_preds,
             y_pred_b=cv_best_preds,
             metric_fn=lambda yt, yp: float(balanced_accuracy_score(yt, yp)),
+            block_size=24,
         ),
         "accuracy": bootstrap_metric_difference(
             y_true=y_test,
             y_pred_a=ensemble_preds,
             y_pred_b=cv_best_preds,
             metric_fn=lambda yt, yp: float(accuracy_score(yt, yp)),
+            block_size=24,
         ),
     }
 
@@ -274,6 +277,9 @@ def run_top3_training_and_ensemble(
         "feature_columns": feature_cols,
         "feature_selection": feature_selection_report,
         "validation_gap": int(validation_gap),
+        "bootstrap_method": "moving_block_bootstrap",
+        "bootstrap_block_size": 24,
+        "storage_url": optuna_config.storage_url,
         "run_dir": str(output_dir),
     }
     save_json(summary, output_dir / "final_results_summary.json")

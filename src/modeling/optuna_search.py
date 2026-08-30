@@ -73,8 +73,8 @@ def run_optuna_search(
 
 
 __all__ = [
-    "suggest_mlp_params",
     "create_study",
     "run_optuna_search",
     "select_top_completed_trials",
+    "suggest_mlp_params",
 ]

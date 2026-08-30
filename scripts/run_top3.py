@@ -7,7 +7,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.core.config import DataConfig, OptunaConfig, TrainingConfig
-from src.core.utils import resolve_run_dir
+from src.core.utils import optuna_storage_url, resolve_run_dir
 from src.pipelines.train_top3 import run_top3_training_and_ensemble
 
 
@@ -24,6 +24,8 @@ def main() -> None:
     parser.add_argument("--vif-threshold", type=float, default=10.0, help="Final-training VIF threshold.")
     parser.add_argument("--device", type=str, default="cpu", help="Device, e.g. cpu or cuda.")
     args = parser.parse_args()
+    if args.run_id is None:
+        raise SystemExit("--run-id is required so the script can load the run-local Optuna database.")
 
     training_config = TrainingConfig(
         epochs=args.epochs,
@@ -34,7 +36,11 @@ def main() -> None:
 
     summary = run_top3_training_and_ensemble(
         data_config=DataConfig(),
-        optuna_config=OptunaConfig(study_name=args.study_name, seed=args.seed),
+        optuna_config=OptunaConfig(
+            study_name=args.study_name,
+            storage_url=optuna_storage_url(run_dir / "optuna.db"),
+            seed=args.seed,
+        ),
         training_config=training_config,
         random_seed=args.seed,
         validation_gap=args.validation_gap,

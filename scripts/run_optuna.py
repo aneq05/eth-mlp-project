@@ -7,7 +7,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.core.config import DataConfig, OptunaConfig, TrainingConfig
-from src.core.utils import resolve_run_dir
+from src.core.utils import optuna_storage_url, resolve_run_dir
 from src.pipelines.train_optuna import run_optuna_time_series_search
 
 
@@ -44,6 +44,7 @@ def main() -> None:
         reset_study=args.reset_study,
     )
     run_dir = resolve_run_dir(PROJECT_ROOT, args.run_id)
+    optuna_config.storage_url = optuna_storage_url(run_dir / "optuna.db")
 
     summary = run_optuna_time_series_search(
         data_config=DataConfig(),
