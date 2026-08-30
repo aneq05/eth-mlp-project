@@ -1,5 +1,4 @@
 from .cleaning import clean_ohlcv
-from .dataset import TabularDataset
 from .load import load_ohlcv_csv, save_dataframe
 from .splitting import chronological_train_val_test_split, time_series_cv_indices
 
@@ -9,5 +8,4 @@ __all__ = [
     "clean_ohlcv",
     "chronological_train_val_test_split",
     "time_series_cv_indices",
-    "TabularDataset",
 ]

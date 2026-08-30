@@ -2,7 +2,6 @@ from collections.abc import Iterator
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import TimeSeriesSplit
 
 
 def chronological_train_val_test_split(
@@ -28,6 +27,8 @@ def time_series_cv_indices(
     n_samples: int,
     n_splits: int = 5,
 ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
+    from sklearn.model_selection import TimeSeriesSplit
+
     splitter = TimeSeriesSplit(n_splits=n_splits)
     indices = np.arange(n_samples)
     for train_idx, val_idx in splitter.split(indices):

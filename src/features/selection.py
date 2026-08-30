@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 def drop_constant_features(df: pd.DataFrame, min_unique: int = 2) -> tuple[pd.DataFrame, list[str]]:
@@ -23,6 +22,8 @@ def reduce_vif_features(
     vif_threshold: float = 10.0,
     max_iter: int = 50,
 ) -> tuple[pd.DataFrame, list[str]]:
+    from statsmodels.stats.outliers_influence import variance_inflation_factor
+
     work = df.copy()
     dropped: list[str] = []
 

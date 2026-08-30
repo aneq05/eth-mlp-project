@@ -1,12 +1,6 @@
-"""ETH MLP project package."""
+"""ETH MLP project package.
 
-from . import core, data, evaluation, features, modeling, pipelines
-
-__all__ = [
-    "core",
-    "data",
-    "features",
-    "modeling",
-    "evaluation",
-    "pipelines",
-]
+Submodules are imported directly by the pipeline entrypoints. Keeping the
+package root lightweight avoids importing optional training dependencies when
+only data-preparation helpers are needed.
+"""

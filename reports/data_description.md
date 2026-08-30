@@ -1,72 +1,82 @@
-# Opis Uzywanych Danych (ETHUSDT 1h)
+# Data Description
 
-## 1. Zbior danych
+## Dataset
 
-- Plik: `data/raw/ethusdt_1h.csv`
-- Instrument: `ETHUSDT` (Ethereum kwotowane w USDT, praktyczny proxy USD)
-- Interwal: `1h` (jedna obserwacja = jedna swieca godzinowa)
-- Liczba rekordow: `46,258`
-- Zakres czasu (UTC): `2021-01-01 00:00:00` -> `2026-04-12 23:00:00`
+- File: `data/raw/ethusdt_1h.csv`
+- Instrument: `ETHUSDT`
+- Market: Binance spot
+- Interval: `1h`
+- Rows: `46,258`
+- Time range: `2021-01-01 00:00:00 UTC` to `2026-04-12 23:00:00 UTC`
 
-## 2. Zrodlo danych
+Each row is one hourly candle. The interval does not mean that the dataset covers one hour; it means every observation summarizes one hour of trading activity.
 
-Dane zostaly pobrane z publicznego archiwum Binance Data Vision:
+## Source
+
+The raw data was assembled from Binance Data Vision public kline archives:
 
 - monthly klines: `https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/1h/`
 - daily klines: `https://data.binance.vision/data/spot/daily/klines/ETHUSDT/1h/`
 
-Do projektu pobrano historie od 2021 roku do biezacego okresu i zapisano jako pojedynczy plik CSV.
+The repository includes a CSV snapshot so the notebooks and pipeline can be inspected without repeating the download step.
 
-## 3. Schemat kolumn
+## Schema
 
-- `timestamp` - czas otwarcia swiecy w UTC
-- `open` - cena otwarcia
-- `high` - cena maksymalna
-- `low` - cena minimalna
-- `close` - cena zamkniecia
-- `volume` - wolumen bazowy (ETH)
-- `quote_asset_volume` - wolumen w aktywie kwotowanym (USDT)
-- `number_of_trades` - liczba transakcji
-- `taker_buy_base_asset_volume` - wolumen kupna agresora (ETH)
-- `taker_buy_quote_asset_volume` - wolumen kupna agresora (USDT)
+| Column | Description |
+| --- | --- |
+| `timestamp` | Candle open time in UTC |
+| `open` | Opening price |
+| `high` | Highest price during the hour |
+| `low` | Lowest price during the hour |
+| `close` | Closing price |
+| `volume` | Base asset volume in ETH |
+| `quote_asset_volume` | Quote asset volume in USDT |
+| `number_of_trades` | Number of trades |
+| `taker_buy_base_asset_volume` | Aggressor buy volume in ETH |
+| `taker_buy_quote_asset_volume` | Aggressor buy volume in USDT |
 
-## 4. Jak interpretowac interwal 1h
+## Quality Checks
 
-`1h` nie oznacza "danych z jednej godziny". Oznacza, ze kazdy rekord opisuje **jedna godzine handlu**.  
-Caly plik zawiera kolejne godziny, godzina po godzinie, przez wiele lat.
+The original raw-data audit found:
 
-## 5. Kontrola jakosci danych (surowy plik)
+- missing values: `0`
+- duplicate rows: `0`
+- duplicate timestamps: `0`
+- candles where `high < max(open, close)`: `0`
+- candles where `low > min(open, close)`: `0`
+- negative volume: `0`
+- rows with `volume = 0`: `2`
+- rows with `number_of_trades = 0`: `2`
+- missing hourly timestamps in the full range: `14`
 
-Wykonane kontrole:
+The dataset is suitable for this educational modeling workflow after basic cleaning and chronological splitting.
 
-- braki (`NaN`) w kolumnach: `0`
-- duplikaty rekordow: `0`
-- duplikaty timestamp: `0`
-- niespojnosc swiec:
-  - `high < max(open, close)`: `0`
-  - `low > min(open, close)`: `0`
-- ujemny wolumen: `0`
-- rekordy z `volume = 0`: `2`
-- rekordy z `number_of_trades = 0`: `2`
-- brakujace godziny w calym zakresie: `14` (glownie 2021)
+## Target Definition
 
-Wniosek: zbior jest dobry jakosciowo i nadaje sie do modelowania po standardowym cleaningu.
+The classification target is derived from the future close-to-close return:
 
-## 6. Wykorzystanie w projekcie
+```text
+future_return_t = close[t + horizon] / close[t] - 1
+```
 
-Zbior sluzy do budowy celu klasyfikacyjnego `sell / hold / buy`:
+Default project settings:
 
-- horyzont: np. `h = 6` godzin
-- zwrot przyszly: `future_return_t = close[t+h] / close[t] - 1`
-- etykiety:
-  - `sell` gdy `future_return_t < -tau`
-  - `hold` gdy `-tau <= future_return_t <= +tau`
-  - `buy` gdy `future_return_t > +tau`
+- `horizon = 6`
+- `threshold = 0.0075`
+- `sell = 0` when `future_return < -threshold`
+- `hold = 1` when `-threshold <= future_return <= threshold`
+- `buy = 2` when `future_return > threshold`
 
-Przy `h=6` i `tau=0.0075` klasy sa sensownie rozlozone (ok. 25-47-27), co dobrze pasuje do klasyfikacji wieloklasowej.
+With the preserved labeled split, the class distribution is:
 
-## 7. Ograniczenia
+| Split | Sell | Hold | Buy |
+| --- | ---: | ---: | ---: |
+| Train | 25.22% | 47.41% | 27.37% |
+| Validation | 27.16% | 43.85% | 28.99% |
+| Test | 25.34% | 48.31% | 26.36% |
 
-- Dane pochodza z rynku spot (Binance), a nie bezposrednio z feedu brokera CFD.
-- USDT jest traktowane jako praktyczny proxy USD.
-- W raporcie nalezy to jawnie opisac w sekcji "zrodlo danych i ograniczenia".
+## Limitations
+
+- Binance spot ETHUSDT is used as a practical proxy for ETH/USD market behavior.
+- No transaction costs, slippage, latency, or exchange execution constraints are modeled.
+- The labels are threshold-dependent and should be re-evaluated for any different trading horizon or market regime.

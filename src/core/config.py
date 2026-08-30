@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 @dataclass
 class DataConfig:
     raw_csv: Path = PROJECT_ROOT / "data" / "raw" / "ethusdt_1h.csv"
-    clean_csv: Path = PROJECT_ROOT / "data" / "interim" / "eth_clean.csv"
+    clean_csv: Path = PROJECT_ROOT / "data" / "clean" / "eth_clean.csv"
     features_parquet: Path = PROJECT_ROOT / "data" / "processed" / "features.parquet"
     train_parquet: Path = PROJECT_ROOT / "data" / "processed" / "train.parquet"
     val_parquet: Path = PROJECT_ROOT / "data" / "processed" / "val.parquet"

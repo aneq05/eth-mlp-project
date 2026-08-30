@@ -7,6 +7,13 @@ def make_multiclass_target(
     threshold: float = 0.0075,
     close_col: str = "close",
 ) -> pd.DataFrame:
+    if horizon <= 0:
+        raise ValueError("horizon must be a positive integer")
+    if threshold < 0:
+        raise ValueError("threshold must be non-negative")
+    if close_col not in df.columns:
+        raise ValueError(f"close_col '{close_col}' is not present in the dataframe")
+
     work = df.copy()
     future_return = work[close_col].shift(-horizon) / work[close_col] - 1.0
     work["future_return"] = future_return
