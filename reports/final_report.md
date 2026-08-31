@@ -50,7 +50,7 @@ The modular pipeline contains:
 
 ## 5. Results
 
-The canonical run is `canonical_seed42`, generated with a run-local data directory and run-local Optuna database. VIF was disabled for this CPU run after correlation filtering because VIF was computationally expensive and numerically noisy for the tabular MLP feature set.
+The canonical run is `canonical_seed42`, generated with a run-local data directory and run-local Optuna database. VIF reduction was disabled for the canonical run after correlation filtering, as it added substantial computational cost without being essential for the MLP pipeline.
 
 ```bash
 python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --bootstrap-block-size 24 --no-vif --device cpu

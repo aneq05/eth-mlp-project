@@ -95,7 +95,7 @@ Canonical run: `canonical_seed42`
 - split sizes after purge gaps: train `32,331`, validation `6,928`, test `6,917`
 - actual split proportions: train `70.02%`, validation `15.00%`, test `14.98%`
 - Optuna trials: `30`
-- feature selection: constant + correlation filtering; VIF disabled for the canonical CPU run
+- feature selection: constant + correlation filtering; VIF reduction was disabled for the canonical run after correlation filtering, as it added substantial computational cost without being essential for the MLP pipeline
 - selected features: `59` of `96` candidate numeric features
 
 | Model | Macro F1 | Balanced accuracy |
