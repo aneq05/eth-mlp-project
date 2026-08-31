@@ -13,9 +13,10 @@ from src.core.config import (
     TargetConfig,
     TrainingConfig,
 )
-from src.core.utils import optuna_storage_url, resolve_run_dir
+from src.core.utils import file_sha256, optuna_storage_url, resolve_run_dir, save_json
 from src.pipelines.evaluate_models import evaluate_saved_predictions
 from src.pipelines.prepare_data import prepare_datasets
+from src.pipelines.train_baselines import run_baseline_models
 from src.pipelines.train_optuna import run_optuna_time_series_search
 from src.pipelines.train_top3 import run_top3_training_and_ensemble
 
@@ -36,6 +37,7 @@ def main() -> None:
     parser.add_argument("--reset-study", action="store_true")
     parser.add_argument("--run-id", type=str, default=None)
     parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--bootstrap-block-size", type=int, default=24)
     args = parser.parse_args()
     run_dir = resolve_run_dir(PROJECT_ROOT, args.run_id)
     storage_url = optuna_storage_url(run_dir / "optuna.db")
@@ -43,11 +45,51 @@ def main() -> None:
     data_config = DataConfig()
     if args.raw_csv:
         data_config.raw_csv = args.raw_csv
+    data_config = data_config.with_run_dir(run_dir)
+    split_config = SplitConfig()
+    target_config = TargetConfig(horizon=args.horizon, threshold=args.threshold)
 
-    prepare_datasets(
+    metadata = prepare_datasets(
         data_config=data_config,
-        target_config=TargetConfig(horizon=args.horizon, threshold=args.threshold),
-        split_config=SplitConfig(),
+        target_config=target_config,
+        split_config=split_config,
+        output_dir=run_dir,
+    )
+    save_json(
+        {
+            "dataset": str(Path(data_config.raw_csv)),
+            "dataset_hash": file_sha256(data_config.raw_csv),
+            "horizon": args.horizon,
+            "horizon_unit": "hours",
+            "threshold": args.threshold,
+            "train_ratio": split_config.train_ratio,
+            "val_ratio": split_config.val_ratio,
+            "test_ratio": split_config.test_ratio,
+            "actual_split_proportions": metadata["actual_split_proportions"],
+            "split_sizes": metadata["split_sizes"],
+            "purged_rows": metadata["purged_rows"],
+            "cv_gap": args.horizon,
+            "validation_gap": args.horizon,
+            "seed": args.seed,
+            "n_trials": args.n_trials,
+            "optuna_epochs": args.optuna_epochs,
+            "final_epochs": args.final_epochs,
+            "study_name": args.study_name,
+            "storage_url": storage_url,
+            "corr_threshold": args.corr_threshold,
+            "apply_vif": not args.no_vif,
+            "vif_threshold": args.vif_threshold,
+            "bootstrap_block_size": args.bootstrap_block_size,
+        },
+        run_dir / "run_config.json",
+    )
+    run_baseline_models(
+        data_config=data_config,
+        corr_threshold=args.corr_threshold,
+        apply_vif=False,
+        vif_threshold=args.vif_threshold,
+        random_seed=args.seed,
+        run_dir=run_dir,
     )
     run_optuna_time_series_search(
         data_config=data_config,
@@ -74,6 +116,7 @@ def main() -> None:
         corr_threshold=args.corr_threshold,
         apply_vif=not args.no_vif,
         vif_threshold=args.vif_threshold,
+        bootstrap_block_size=args.bootstrap_block_size,
         run_dir=run_dir,
     )
     evaluate_saved_predictions(data_config.features_parquet.parents[2], run_dir=run_dir)

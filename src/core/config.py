@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -12,6 +12,17 @@ class DataConfig:
     train_parquet: Path = PROJECT_ROOT / "data" / "processed" / "train.parquet"
     val_parquet: Path = PROJECT_ROOT / "data" / "processed" / "val.parquet"
     test_parquet: Path = PROJECT_ROOT / "data" / "processed" / "test.parquet"
+
+    def with_run_dir(self, run_dir: str | Path) -> "DataConfig":
+        data_dir = Path(run_dir) / "data"
+        return replace(
+            self,
+            clean_csv=data_dir / "clean.csv",
+            features_parquet=data_dir / "features.parquet",
+            train_parquet=data_dir / "train.parquet",
+            val_parquet=data_dir / "val.parquet",
+            test_parquet=data_dir / "test.parquet",
+        )
 
 
 @dataclass

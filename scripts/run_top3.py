@@ -22,6 +22,7 @@ def main() -> None:
     parser.add_argument("--corr-threshold", type=float, default=0.95, help="Final-training correlation threshold.")
     parser.add_argument("--no-vif", action="store_true", help="Disable final-training VIF reduction.")
     parser.add_argument("--vif-threshold", type=float, default=10.0, help="Final-training VIF threshold.")
+    parser.add_argument("--bootstrap-block-size", type=int, default=24, help="Moving block bootstrap block size.")
     parser.add_argument("--device", type=str, default="cpu", help="Device, e.g. cpu or cuda.")
     args = parser.parse_args()
     if args.run_id is None:
@@ -33,9 +34,10 @@ def main() -> None:
         device=args.device,
     )
     run_dir = resolve_run_dir(PROJECT_ROOT, args.run_id)
+    data_config = DataConfig().with_run_dir(run_dir)
 
     summary = run_top3_training_and_ensemble(
-        data_config=DataConfig(),
+        data_config=data_config,
         optuna_config=OptunaConfig(
             study_name=args.study_name,
             storage_url=optuna_storage_url(run_dir / "optuna.db"),
@@ -47,6 +49,7 @@ def main() -> None:
         corr_threshold=args.corr_threshold,
         apply_vif=not args.no_vif,
         vif_threshold=args.vif_threshold,
+        bootstrap_block_size=args.bootstrap_block_size,
         run_dir=run_dir,
     )
     print("Top-3 training and ensemble evaluation completed.")

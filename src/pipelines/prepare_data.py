@@ -14,6 +14,7 @@ def prepare_datasets(
     data_config: DataConfig,
     target_config: TargetConfig,
     split_config: SplitConfig,
+    output_dir: str | None = None,
 ) -> dict:
     raw_df = load_ohlcv_csv(data_config.raw_csv)
     clean_df, cleaning_stats = clean_ohlcv(raw_df)
@@ -45,14 +46,27 @@ def prepare_datasets(
     save_dataframe(val_df, data_config.val_parquet)
     save_dataframe(test_df, data_config.test_parquet)
 
-    reports_dir = data_config.features_parquet.parents[2] / "reports"
+    reports_dir = ensure_dir(output_dir) if output_dir is not None else data_config.features_parquet.parents[2] / "reports"
     ensure_dir(reports_dir)
 
     class_counts = final_df["target"].value_counts().sort_index().to_dict()
+    rows_after_target = len(feat_df)
+    split_sizes = {"train": len(train_df), "val": len(val_df), "test": len(test_df)}
+    final_rows = len(final_df)
     metadata = {
         "cleaning_stats": cleaning_stats,
-        "rows_final_dataset": len(final_df),
-        "split_sizes": {"train": len(train_df), "val": len(val_df), "test": len(test_df)},
+        "rows_after_target": rows_after_target,
+        "rows_final_dataset": final_rows,
+        "split_sizes": split_sizes,
+        "actual_split_proportions": {
+            split: round(size / final_rows, 6) if final_rows else 0.0 for split, size in split_sizes.items()
+        },
+        "requested_split_proportions": {
+            "train": split_config.train_ratio,
+            "val": split_config.val_ratio,
+            "test": split_config.test_ratio,
+        },
+        "purged_rows": rows_after_target - final_rows,
         "class_counts": {str(k): int(v) for k, v in class_counts.items()},
         "split_gap_rows": int(target_config.horizon),
         "num_candidate_features": len(

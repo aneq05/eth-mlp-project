@@ -69,7 +69,7 @@ Default project settings:
 - `hold = 1` when `-threshold <= future_return <= threshold`
 - `buy = 2` when `future_return > threshold`
 
-The exact class distribution is generated during data preparation and saved to `reports/data_prep_metadata.json`. Generated labeled and processed datasets are intentionally not committed, so the public repository does not mix stale artifacts with the current pipeline.
+The exact class distribution is generated during data preparation and saved to `reports/runs/<run-id>/data_prep_metadata.json`. Generated labeled and processed datasets are intentionally not committed, so the public repository does not mix stale artifacts with the current pipeline.
 
 ## Limitations
 

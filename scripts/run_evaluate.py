@@ -16,6 +16,8 @@ def main() -> None:
     parser.add_argument("--predictions-dir", type=str, default=None, help="Explicit predictions directory.")
     parser.add_argument("--no-figures", action="store_true", help="Skip confusion matrix PNG generation.")
     args = parser.parse_args()
+    if args.run_id is None and args.predictions_dir is None:
+        raise SystemExit("--run-id is required unless --predictions-dir is provided.")
 
     run_dir = PROJECT_ROOT / "reports" / "runs" / args.run_id if args.run_id else None
     report = evaluate_saved_predictions(

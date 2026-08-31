@@ -7,7 +7,7 @@ from .config import (
     TargetConfig,
     TrainingConfig,
 )
-from .utils import make_run_id, optuna_storage_url, resolve_run_dir
+from .utils import file_sha256, make_run_id, optuna_storage_url, resolve_run_dir
 
 __all__ = [
     "PROJECT_ROOT",
@@ -17,6 +17,7 @@ __all__ = [
     "SplitConfig",
     "TargetConfig",
     "TrainingConfig",
+    "file_sha256",
     "make_run_id",
     "optuna_storage_url",
     "resolve_run_dir",

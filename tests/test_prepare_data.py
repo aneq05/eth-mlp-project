@@ -48,6 +48,7 @@ class TestPrepareDatasets(TestCase):
                     data_config=data_config,
                     target_config=TargetConfig(horizon=1, threshold=0.01),
                     split_config=SplitConfig(train_ratio=0.5, val_ratio=0.25, test_ratio=0.25),
+                    output_dir=root / "reports" / "runs" / "test_run",
                 )
 
             train_df = pd.read_csv(data_config.train_parquet)
@@ -60,3 +61,6 @@ class TestPrepareDatasets(TestCase):
             self.assertIn("late_only_signal", test_df.columns)
             self.assertFalse(np.isinf(train_df.select_dtypes(include=["number"]).to_numpy()).any())
             self.assertEqual(metadata["split_gap_rows"], 1)
+            self.assertIn("actual_split_proportions", metadata)
+            self.assertEqual(metadata["purged_rows"], 2)
+            self.assertTrue((root / "reports" / "runs" / "test_run" / "data_prep_metadata.json").exists())

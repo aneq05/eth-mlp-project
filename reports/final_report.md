@@ -45,7 +45,8 @@ The modular pipeline contains:
 7. MLP training in PyTorch with class-weighted cross-entropy.
 8. Optuna hyperparameter search with seeded sampling and purged walk-forward cross-validation.
 9. Top-3 completed-trial retraining and mean-probability ensembling.
-10. Test-set evaluation and bootstrap comparison against the CV-best single model.
+10. Majority-class, Logistic Regression, and Random Forest baselines.
+11. Test-set evaluation and moving-block bootstrap comparison against the CV-best single model.
 
 ## 5. Results
 
@@ -57,7 +58,7 @@ The recommended command is:
 python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --device cpu
 ```
 
-The generated metrics will be written to `reports/runs/canonical_seed42/final_results_summary.json`, with the matching Optuna study stored in `reports/runs/canonical_seed42/optuna.db`.
+The generated metrics will be written to `reports/runs/canonical_seed42/final_results_summary.json`, with baseline metrics in `reports/runs/canonical_seed42/baseline_results.json` and the matching Optuna study stored in `reports/runs/canonical_seed42/optuna.db`.
 
 For the final public snapshot, keep the full run directory out of git and promote only compact canonical artifacts such as `reports/canonical_results.json`, `reports/canonical_confusion_matrix.png`, and refreshed README metrics.
 

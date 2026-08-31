@@ -1,3 +1,4 @@
+import hashlib
 import json
 import random
 from datetime import UTC, datetime
@@ -36,6 +37,14 @@ def resolve_run_dir(project_root: str | Path, run_id: str | None = None) -> Path
 
 def optuna_storage_url(db_path: str | Path) -> str:
     return f"sqlite:///{Path(db_path).resolve().as_posix()}"
+
+
+def file_sha256(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def save_json(data: dict, output_path: str | Path) -> None:

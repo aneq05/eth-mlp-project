@@ -31,6 +31,8 @@ def main() -> None:
     )
     parser.add_argument("--device", type=str, default="cpu", help="Device, e.g. cpu or cuda.")
     args = parser.parse_args()
+    if args.run_id is None:
+        raise SystemExit("--run-id is required so the script can load run-local prepared data.")
 
     training_config = TrainingConfig(
         epochs=args.epochs,
@@ -45,9 +47,10 @@ def main() -> None:
     )
     run_dir = resolve_run_dir(PROJECT_ROOT, args.run_id)
     optuna_config.storage_url = optuna_storage_url(run_dir / "optuna.db")
+    data_config = DataConfig().with_run_dir(run_dir)
 
     summary = run_optuna_time_series_search(
-        data_config=DataConfig(),
+        data_config=data_config,
         optuna_config=optuna_config,
         training_config=training_config,
         n_splits=args.n_splits,
