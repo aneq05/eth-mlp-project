@@ -92,11 +92,23 @@ def evaluate_saved_predictions(
         report = _compute_classification_report(y_true, y_pred, labels=labels)
 
         if make_figures:
+            import matplotlib
+
+            matplotlib.use("Agg")
             import matplotlib.pyplot as plt
             import seaborn as sns
 
+            class_names = ["sell", "hold", "buy"]
             fig, ax = plt.subplots(figsize=(6, 5))
-            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+            sns.heatmap(
+                cm,
+                annot=True,
+                fmt="d",
+                cmap="Blues",
+                xticklabels=class_names,
+                yticklabels=class_names,
+                ax=ax,
+            )
             ax.set_title(f"Confusion Matrix: {file_path.stem}")
             ax.set_xlabel("Predicted")
             ax.set_ylabel("True")

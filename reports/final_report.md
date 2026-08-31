@@ -50,15 +50,25 @@ The modular pipeline contains:
 
 ## 5. Results
 
-Historical prediction CSVs and metric summaries from earlier pipeline revisions were removed from version control. A fresh canonical run should be generated with the current leakage-aware pipeline before presenting final model results.
-
-The recommended command is:
+The canonical run is `canonical_seed42`, generated with a run-local data directory and run-local Optuna database. VIF was disabled for this CPU run after correlation filtering because VIF was computationally expensive and numerically noisy for the tabular MLP feature set.
 
 ```bash
-python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --device cpu
+python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --bootstrap-block-size 24 --no-vif --device cpu
 ```
 
-The generated metrics will be written to `reports/runs/canonical_seed42/final_results_summary.json`, with baseline metrics in `reports/runs/canonical_seed42/baseline_results.json` and the matching Optuna study stored in `reports/runs/canonical_seed42/optuna.db`.
+| Model | Macro F1 | Balanced accuracy |
+| --- | ---: | ---: |
+| Majority baseline | 0.2168 | 0.3333 |
+| Logistic Regression | 0.3945 | 0.3970 |
+| Random Forest | 0.4149 | 0.4233 |
+| CV-best MLP | 0.4096 | 0.4195 |
+| MLP Ensemble | 0.4121 | 0.4213 |
+
+Best Optuna CV macro F1 was `0.4017` for trial `19`. The MLP ensemble slightly improved over the CV-best MLP on the test set, but the Random Forest baseline remained marginally stronger on macro F1 and balanced accuracy. This is an important result: the neural network is evaluated against simpler baselines rather than assumed to be superior.
+
+The moving-block bootstrap comparison of MLP Ensemble vs CV-best MLP gives macro F1 mean difference `+0.0027` with 95% CI `[-0.0072, +0.0131]` using 24-hour blocks.
+
+The generated metrics are stored in `reports/canonical_results.json`; the matching full run artifacts are stored under the ignored `reports/runs/canonical_seed42/` directory.
 
 For the final public snapshot, keep the full run directory out of git and promote only compact canonical artifacts such as `reports/canonical_results.json`, `reports/canonical_confusion_matrix.png`, and refreshed README metrics.
 

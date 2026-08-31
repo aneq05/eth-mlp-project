@@ -1,0 +1,199 @@
+{
+  "run_id": "canonical_seed42",
+  "dataset_hash": "4541cdcdc93941deced77fb875cab6458c8d27043dc532b544cbb5b4b4998e65",
+  "config": {
+    "dataset": "data\\raw\\ethusdt_1h.csv",
+    "dataset_hash": "4541cdcdc93941deced77fb875cab6458c8d27043dc532b544cbb5b4b4998e65",
+    "horizon": 6,
+    "horizon_unit": "hours",
+    "threshold": 0.0075,
+    "train_ratio": 0.7,
+    "val_ratio": 0.15,
+    "test_ratio": 0.15,
+    "actual_split_proportions": {
+      "train": 0.700169,
+      "val": 0.150035,
+      "test": 0.149796
+    },
+    "split_sizes": {
+      "train": 32331,
+      "val": 6928,
+      "test": 6917
+    },
+    "purged_rows": 12,
+    "cv_gap": 6,
+    "validation_gap": 6,
+    "seed": 42,
+    "n_trials": 30,
+    "optuna_epochs": 20,
+    "final_epochs": 50,
+    "study_name": "eth_mlp_optimization",
+    "storage_url": "sqlite:///C:/Users/ankap/OneDrive/Desktop/PROJEKTY/nn/eth-mlp-project/reports/runs/canonical_seed42/optuna.db",
+    "corr_threshold": 0.95,
+    "apply_vif": false,
+    "vif_threshold": 10.0,
+    "bootstrap_block_size": 24
+  },
+  "data": {
+    "rows_after_target": 46188,
+    "rows_final_dataset": 46176,
+    "split_sizes": {
+      "train": 32331,
+      "val": 6928,
+      "test": 6917
+    },
+    "actual_split_proportions": {
+      "train": 0.700169,
+      "val": 0.150035,
+      "test": 0.149796
+    },
+    "purged_rows": 12,
+    "class_distribution_by_split": {
+      "train": {
+        "0": {
+          "count": 8152,
+          "pct": 0.252142
+        },
+        "1": {
+          "count": 15343,
+          "pct": 0.47456
+        },
+        "2": {
+          "count": 8836,
+          "pct": 0.273298
+        }
+      },
+      "val": {
+        "0": {
+          "count": 1881,
+          "pct": 0.271507
+        },
+        "1": {
+          "count": 3040,
+          "pct": 0.438799
+        },
+        "2": {
+          "count": 2007,
+          "pct": 0.289694
+        }
+      },
+      "test": {
+        "0": {
+          "count": 1757,
+          "pct": 0.254012
+        },
+        "1": {
+          "count": 3333,
+          "pct": 0.481856
+        },
+        "2": {
+          "count": 1827,
+          "pct": 0.264132
+        }
+      }
+    }
+  },
+  "baselines": {
+    "majority_class": {
+      "accuracy": 0.4818562960821165,
+      "balanced_accuracy": 0.3333333333333333,
+      "f1_macro": 0.21678048780487805,
+      "precision_macro": 0.1606187653607055,
+      "recall_macro": 0.3333333333333333
+    },
+    "logistic_regression": {
+      "accuracy": 0.41564261963278876,
+      "balanced_accuracy": 0.39695549049733536,
+      "f1_macro": 0.394498217422119,
+      "precision_macro": 0.39928937732937014,
+      "recall_macro": 0.39695549049733536
+    },
+    "random_forest": {
+      "accuracy": 0.4316900390342634,
+      "balanced_accuracy": 0.42331128487017056,
+      "f1_macro": 0.41494283622616007,
+      "precision_macro": 0.4246710462951775,
+      "recall_macro": 0.42331128487017056
+    }
+  },
+  "top3_models": [
+    {
+      "rank": 1,
+      "trial_number": 19,
+      "cv_score": 0.40168876038977575,
+      "test_metrics": {
+        "accuracy": 0.4191123319358103,
+        "balanced_accuracy": 0.4194576131410563,
+        "f1_macro": 0.40962827962404735,
+        "precision_macro": 0.42687007449076125,
+        "recall_macro": 0.4194576131410563
+      }
+    },
+    {
+      "rank": 2,
+      "trial_number": 28,
+      "cv_score": 0.3981637212001533,
+      "test_metrics": {
+        "accuracy": 0.3961254879282926,
+        "balanced_accuracy": 0.40462258696185405,
+        "f1_macro": 0.39019188245305086,
+        "precision_macro": 0.4194697528217075,
+        "recall_macro": 0.40462258696185405
+      }
+    },
+    {
+      "rank": 3,
+      "trial_number": 7,
+      "cv_score": 0.39812348836134237,
+      "test_metrics": {
+        "accuracy": 0.43053346826658956,
+        "balanced_accuracy": 0.4238165526232786,
+        "f1_macro": 0.41682405428818464,
+        "precision_macro": 0.42622891141472574,
+        "recall_macro": 0.4238165526232786
+      }
+    }
+  ],
+  "cv_best_single_model": {
+    "rank": 1,
+    "trial_number": 19,
+    "cv_score": 0.40168876038977575,
+    "test_metrics": {
+      "accuracy": 0.4191123319358103,
+      "balanced_accuracy": 0.4194576131410563,
+      "f1_macro": 0.40962827962404735,
+      "precision_macro": 0.42687007449076125,
+      "recall_macro": 0.4194576131410563
+    }
+  },
+  "ensemble_metrics": {
+    "accuracy": 0.4220037588549949,
+    "balanced_accuracy": 0.4212542850003931,
+    "f1_macro": 0.4120640461374132,
+    "precision_macro": 0.42750001256589165,
+    "recall_macro": 0.4212542850003931
+  },
+  "bootstrap_ensemble_vs_cv_best": {
+    "f1_macro": {
+      "mean_diff": 0.002656054506927682,
+      "ci_lower_95": -0.007160665570654863,
+      "ci_upper_95": 0.013085185677135937,
+      "block_size": 24
+    },
+    "balanced_accuracy": {
+      "mean_diff": 0.0020504506265754045,
+      "ci_lower_95": -0.008849125101683527,
+      "ci_upper_95": 0.013343199162239134,
+      "block_size": 24
+    },
+    "accuracy": {
+      "mean_diff": 0.003059418823189243,
+      "ci_lower_95": -0.006509324851814382,
+      "ci_upper_95": 0.013304178111898213,
+      "block_size": 24
+    }
+  },
+  "bootstrap_method": "moving_block_bootstrap",
+  "feature_count": 59,
+  "candidate_feature_count": 96
+}

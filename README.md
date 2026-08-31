@@ -87,17 +87,32 @@ Bootstrap comparison uses a moving block bootstrap. The default `--bootstrap-blo
 
 ## Results Snapshot
 
-Historical prediction CSVs and metric summaries from earlier pipeline revisions were removed from version control to avoid presenting stale results as current. Run the commands below to create a fresh, isolated experiment under `reports/runs/<run-id>/`.
+Canonical run: `canonical_seed42`
 
-After a canonical run is generated, copy the key metrics from `reports/runs/<run-id>/baseline_results.json` and `reports/runs/<run-id>/final_results_summary.json` into this section.
+- raw data hash: `4541cdcdc93941deced77fb875cab6458c8d27043dc532b544cbb5b4b4998e65`
+- horizon: `6` hours
+- threshold: `0.0075`
+- split sizes after purge gaps: train `32,331`, validation `6,928`, test `6,917`
+- actual split proportions: train `70.02%`, validation `15.00%`, test `14.98%`
+- Optuna trials: `30`
+- feature selection: constant + correlation filtering; VIF disabled for the canonical CPU run
+- selected features: `59` of `96` candidate numeric features
 
 | Model | Macro F1 | Balanced accuracy |
 | --- | ---: | ---: |
-| Majority baseline | pending canonical run | pending canonical run |
-| Logistic Regression | pending canonical run | pending canonical run |
-| Random Forest | pending canonical run | pending canonical run |
-| Best MLP | pending canonical run | pending canonical run |
-| MLP Ensemble | pending canonical run | pending canonical run |
+| Majority baseline | 0.2168 | 0.3333 |
+| Logistic Regression | 0.3945 | 0.3970 |
+| Random Forest | 0.4149 | 0.4233 |
+| CV-best MLP | 0.4096 | 0.4195 |
+| MLP Ensemble | 0.4121 | 0.4213 |
+
+Best Optuna CV macro F1 was `0.4017` for trial `19`. The moving-block bootstrap comparison of MLP Ensemble vs CV-best MLP gives macro F1 mean difference `+0.0027` with 95% CI `[-0.0072, +0.0131]` using 24-hour blocks.
+
+Test class distribution: sell `25.40%`, hold `48.19%`, buy `26.41%`.
+
+The compact machine-readable snapshot is in `reports/canonical_results.json`; the full run directory remains ignored to avoid committing prediction CSVs and model artifacts.
+
+![Canonical ensemble confusion matrix](reports/canonical_confusion_matrix.png)
 
 ## Quick Start
 
@@ -152,7 +167,7 @@ python scripts/run_evaluate.py --run-id canonical_seed42
 Or run everything end-to-end:
 
 ```bash
-python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --bootstrap-block-size 24 --device cpu
+python scripts/run_all.py --run-id canonical_seed42 --raw-csv data/raw/ethusdt_1h.csv --n-trials 30 --seed 42 --reset-study --bootstrap-block-size 24 --no-vif --device cpu
 ```
 
 New run outputs are written under `reports/runs/<run-id>/` so prediction CSVs and figures from different experiments are not mixed.
