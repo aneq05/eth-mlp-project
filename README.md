@@ -71,7 +71,7 @@ With the default configuration:
   - `1`: hold, when future return is within `[-threshold, +threshold]`
   - `2`: buy, when future return is above `+threshold`
 
-The model is a feed-forward MLP trained with weighted cross-entropy to reduce the impact of class imbalance.
+The model is a compact feed-forward MLP trained with weighted cross-entropy to reduce the impact of class imbalance. The Optuna search space is intentionally CPU-friendly for reproducible local experimentation on tabular hourly data.
 
 Feature selection is treated as fold-local preprocessing. `prepare_data.py` saves unselected chronological splits; Optuna folds fit constant-feature removal, correlation filtering, optional VIF reduction, and scaling only on each fold's training window. Final top-3 training repeats feature selection on its final training window before applying the same columns to validation and test data.
 

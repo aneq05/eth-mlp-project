@@ -6,10 +6,10 @@ from .trial_selection import select_top_completed_trials
 
 
 def suggest_mlp_params(trial: optuna.Trial) -> dict:
-    n_layers = trial.suggest_int("n_layers", 2, 5)
+    n_layers = trial.suggest_int("n_layers", 1, 3)
     hidden_dims = []
     for i in range(n_layers):
-        hidden_dims.append(trial.suggest_int(f"hidden_dim_{i+1}", 32, 512, step=32))
+        hidden_dims.append(trial.suggest_int(f"hidden_dim_{i+1}", 32, 256, step=32))
 
     params = {
         "n_layers": n_layers,
@@ -17,8 +17,8 @@ def suggest_mlp_params(trial: optuna.Trial) -> dict:
         "dropout": trial.suggest_float("dropout", 0.0, 0.5),
         "activation": trial.suggest_categorical("activation", ["relu", "leaky_relu", "gelu"]),
         "use_batchnorm": trial.suggest_categorical("use_batchnorm", [True, False]),
-        "lr": trial.suggest_float("lr", 1e-5, 1e-2, log=True),
-        "batch_size": trial.suggest_categorical("batch_size", [32, 64, 128, 256]),
+        "lr": trial.suggest_float("lr", 1e-4, 1e-2, log=True),
+        "batch_size": trial.suggest_categorical("batch_size", [128, 256, 512]),
         "weight_decay": trial.suggest_float("weight_decay", 1e-7, 1e-3, log=True),
         "scaler_type": trial.suggest_categorical("scaler_type", ["standard", "robust"]),
         "optimizer": trial.suggest_categorical("optimizer", ["adam", "adamw"]),
