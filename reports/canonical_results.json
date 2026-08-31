@@ -2,7 +2,7 @@
   "run_id": "canonical_seed42",
   "dataset_hash": "4541cdcdc93941deced77fb875cab6458c8d27043dc532b544cbb5b4b4998e65",
   "config": {
-    "dataset": "data\\raw\\ethusdt_1h.csv",
+    "dataset": "data/raw/ethusdt_1h.csv",
     "dataset_hash": "4541cdcdc93941deced77fb875cab6458c8d27043dc532b544cbb5b4b4998e65",
     "horizon": 6,
     "horizon_unit": "hours",
@@ -28,7 +28,7 @@
     "optuna_epochs": 20,
     "final_epochs": 50,
     "study_name": "eth_mlp_optimization",
-    "storage_url": "sqlite:///C:/Users/ankap/OneDrive/Desktop/PROJEKTY/nn/eth-mlp-project/reports/runs/canonical_seed42/optuna.db",
+    "storage_url": "reports/runs/canonical_seed42/optuna.db",
     "corr_threshold": 0.95,
     "apply_vif": false,
     "vif_threshold": 10.0,
